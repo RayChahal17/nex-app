@@ -128,12 +128,12 @@ export default function Header() {
                </Navbar.Link>
                <Navbar.Link>
                   <div className="relative">
-                     <button onClick={toggleServicesDropdown} className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                     <button onClick={toggleServicesDropdown} className="block  hover:bg-gray-100 cursor-pointer">
                         Services
                      </button>
                      {servicesDropdownOpen && (
-                        <div className='absolute left-0 mt-2 w-full lg:w-64 bg-white border rounded-lg shadow-lg z-50'>
-                           <ul className='p-4 grid grid-cols-1 lg:grid-cols-3 gap-4'>
+                        <div className='absolute left-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 text-sm'>
+                        <ul className='py-4 px-4 grid grid-cols-1 lg:grid-cols-3 gap-2 cursor-pointer '>
                               <div className="space-y-4">
                                  <li>
                                     <Link to='/concrete' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
