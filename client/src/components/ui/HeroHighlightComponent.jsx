@@ -11,7 +11,7 @@ import Gallery from "../GalleryComponent";
 
 export function HeroHighlightComponent() {
    return (
-      <div className="min-h-screen flex flex-col bg-red-500 ">
+      <div className="min-h-screen flex flex-col">
          <HeroHighlight containerClassName="flex-grow flex flex-col justify-center items-center">
             <motion.h1
                initial={{
