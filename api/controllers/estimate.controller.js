@@ -7,7 +7,6 @@ import User from '../models/user.model.js';
 import CustomerEmail from '../models/customEmail.model.js';
 import AllAppointmentsCollected from '../models/allApointmentsCollected.model.js';
 
-
 /**
  * Fetches all estimates, including pending, confirmed, and deleted estimates.
  */
@@ -32,12 +31,10 @@ export const getAllEstimates = async (req, res) => {
  * Creates a new estimate and adds it to the AllAppointmentsCollected collection.
  * Checks for overlapping appointments and sends a confirmation email.
  */
-
-
 export const createEstimate = async (req, res) => {
    const { date, start, name, email, address, city, service, phone } = req.body;
-   const formattedStart = DateTime.fromISO(start).toISO();
-   const formattedEnd = DateTime.fromISO(start).plus({ hours: 1 }).toISO();
+   const formattedStart = DateTime.fromISO(start).startOf('hour').toISO();
+   const formattedEnd = DateTime.fromISO(start).plus({ hours: 1 }).startOf('hour').toISO();
 
    try {
       const existingAppointments = await Estimate.find({
@@ -112,10 +109,10 @@ export const createEstimate = async (req, res) => {
          html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                <h2 style="color: #4CAF50;">Appointment Confirmation</h2>
-               <p>Your meeting has been created with one of the representatives of NexRenovations at ${new Date(start).toLocaleString()}.</p>
+               <p>Your meeting has been created with one of the representatives of NexRenovations at ${DateTime.fromISO(formattedStart).setZone('America/Toronto').toLocaleString(DateTime.DATETIME_FULL)}.</p>
                <p>The representative will call you and confirm the appointment within 24 hours and meet you regarding the same.</p>
                <p>You can call on <a href="tel:6478352021" style="color: #4CAF50;">647-835-2021</a> for additional information.</p>
-               <p>The representative of NexRenovations will see you anytime from ${new Date(start).toLocaleTimeString()} to ${new Date(new Date(start).getTime() + 60 * 60 * 1000).toLocaleTimeString()}. Please be ready.</p>
+               <p>The representative of NexRenovations will see you anytime from ${DateTime.fromISO(formattedStart).setZone('America/Toronto').toLocaleString(DateTime.TIME_SIMPLE)} to ${DateTime.fromISO(formattedEnd).setZone('America/Toronto').toLocaleString(DateTime.TIME_SIMPLE)}. Please be ready.</p>
                <p>Check your spam folder for confirmation.</p>
                <br>
                <p>Thank you,</p>
@@ -137,6 +134,8 @@ export const createEstimate = async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to create estimate', error: error.message });
    }
 };
+
+
 
 /**
  * Confirms an estimate and moves it to the ConfirmedAppointment collection.
@@ -201,7 +200,7 @@ export const permanentDeleteEstimate = async (req, res) => {
       await ConfirmedAppointment.findByIdAndDelete(id);
       res.status(200).json({ success: true, message: 'Appointment permanently deleted' });
    } catch (error) {
-      res.status (500).json({ success: false, message: 'Failed to delete appointment permanently' });
+      res.status(500).json({ success: false, message: 'Failed to delete appointment permanently' });
    }
 };
 
@@ -227,8 +226,8 @@ export const sendConfirmationEmail = async (req, res) => {
       html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                 <h2 style="color: #4CAF50;">Appointment Confirmation</h2>
-                <p>Your appointment has been confirmed for ${new Date(start).toLocaleString()}.</p>
-                <p>Please be ready from ${new Date(start).toLocaleTimeString()} to ${new Date(end).toLocaleTimeString()}.</p>
+                <p>Your appointment has been confirmed for ${DateTime.fromISO(start).toLocaleString(DateTime.DATETIME_MED)}.</p>
+                <p>Please be ready from ${DateTime.fromISO(start).toLocaleString(DateTime.TIME_SIMPLE)} to ${DateTime.fromISO(end).toLocaleString(DateTime.TIME_SIMPLE)}.</p>
                 <br>
                 <p>Thank you,</p>
                 <p>NexRenovations Team</p>
@@ -281,8 +280,8 @@ export const addBusyTime = async (req, res) => {
    };
 
    try {
-      const formattedStart = DateTime.fromISO(`${date}T${start}`).toISO();
-      const formattedEnd = DateTime.fromISO(`${date}T${end}`).toISO();
+      const formattedStart = DateTime.fromISO(`${date}T${start}`).toUTC().toISO(); // Ensure time is in UTC
+      const formattedEnd = DateTime.fromISO(`${date}T${end}`).toUTC().toISO(); // Ensure time is in UTC
 
       console.log('Formatted Start:', formattedStart);
       console.log('Formatted End:', formattedEnd);
@@ -336,6 +335,3 @@ export const removeBusyTime = async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to remove busy time' });
    }
 };
-
-
-
