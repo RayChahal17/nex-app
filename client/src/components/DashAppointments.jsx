@@ -55,11 +55,11 @@ export default function DashAppointments() {
       }
 
       if (sortCriteria === 'date-new') {
-         filtered.sort((a, b) => new Date(b.busyTimeRanges[0].start) - new Date(a.busyTimeRanges[0].start));
-         setSortLabel('Closest Appointments');
-      } else if (sortCriteria === 'date-old') {
          filtered.sort((a, b) => new Date(a.busyTimeRanges[0].start) - new Date(b.busyTimeRanges[0].start));
          setSortLabel('Farthest Appointments');
+      } else if (sortCriteria === 'date-old') {
+         filtered.sort((a, b) => new Date(b.busyTimeRanges[0].start) - new Date(a.busyTimeRanges[0].start));
+         setSortLabel('Closest Appointments');
       } else if (sortCriteria === 'name') {
          filtered.sort((a, b) => a.busyTimeRanges[0].name.localeCompare(b.busyTimeRanges[0].name));
          setSortLabel('Name');

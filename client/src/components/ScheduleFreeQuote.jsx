@@ -102,8 +102,8 @@ export default function ScheduleFreeQuote() {
       if (data.success) {
          setConfirmationDetails({
             date: selectedDate.toFormat('MMMM dd, yyyy'),
-            start: selectedDate.set({ hour }).toFormat('h a'),
-            end: selectedDate.set({ hour: hour + 1 }).toFormat('h a'),
+            start: DateTime.fromISO(start).toFormat('h a'),
+            end: DateTime.fromISO(end).toFormat('h a'),
          });
          setShowModal(false);
          setSelectedDate(selectedDate);
@@ -129,7 +129,7 @@ export default function ScheduleFreeQuote() {
       setSelectedDate(selectedDate);
       setFormDetails({ name: '', email: '', address: '', city: '', service: '', phone: '' });
    };
-
+   
    return (
       <>
          <div className="flex flex-col items-center rounded-[22px] bg-gray-300 bg-opacity-50 p-5">
