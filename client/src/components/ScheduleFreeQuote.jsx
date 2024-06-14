@@ -168,6 +168,7 @@ export default function ScheduleFreeQuote() {
                      value={formDetails.name}
                      onChange={handleInputChange}
                      required
+                     disabled={loading}
                   />
                   <TextInput
                      id="email"
@@ -176,6 +177,7 @@ export default function ScheduleFreeQuote() {
                      value={formDetails.email}
                      onChange={handleInputChange}
                      required
+                     disabled={loading}
                   />
                   <TextInput
                      id="address"
@@ -184,6 +186,7 @@ export default function ScheduleFreeQuote() {
                      value={formDetails.address}
                      onChange={handleInputChange}
                      required
+                     disabled={loading}
                   />
                   <TextInput
                      id="phone"
@@ -192,12 +195,14 @@ export default function ScheduleFreeQuote() {
                      value={formDetails.phone}
                      onChange={handleInputChange}
                      required
+                     disabled={loading}
                   />
                   <Select
                      id="city"
                      value={formDetails.city}
                      onChange={handleInputChange}
                      required
+                     disabled={loading}
                   >
                      <option value="" disabled>Select your city</option>
                      <option value="Ancaster">Ancaster</option>
@@ -235,6 +240,7 @@ export default function ScheduleFreeQuote() {
                      value={formDetails.service}
                      onChange={handleInputChange}
                      required
+                     disabled={loading}
                   >
                      <option value="" disabled>Select the kind of service</option>
                      <option value="Concrete Builds">Concrete Services</option>
@@ -250,11 +256,18 @@ export default function ScheduleFreeQuote() {
                      <option value="Custom Landscapes">Custom Landscapes</option>
                      {/* <option value="Custom Pools & Spas">Custom Pools & Spas</option> */}
                   </Select>
+                  {loading && (
+                     <div className="flex justify-center mt-4">
+                        <Spinner size="lg" />
+                     </div>
+                  )}
                </div>
             </Modal.Body>
             <Modal.Footer>
-               <Button onClick={() => handleSlotClick(selectedDate.hour)}>OK</Button>
-               <Button color="gray" onClick={handleCancel}>Cancel</Button>
+               <Button onClick={() => handleSlotClick(selectedDate.hour)} disabled={loading}>
+                  {loading ? 'Loading...' : 'OK'}
+               </Button>
+               <Button color="gray" onClick={handleCancel} disabled={loading}>Cancel</Button>
             </Modal.Footer>
          </Modal>
 
