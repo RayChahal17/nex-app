@@ -1,26 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // Importing necessary components and hooks from React and other libraries
-import { HeroParallax } from '../components/ui/HeroParallex';
 import a from '../assets/images/a.jpeg';
-import b from '../assets/images/b.jpeg';
-import c from '../assets/images/c.jpeg';
 import d from '../assets/images/d.jpeg';
-import e from '../assets/images/e.jpeg';
-import f from '../assets/images/f.jpeg';
-import g from '../assets/images/g.jpeg';
-import h from '../assets/images/h.jpeg';
+import { HeroParallax } from '../components/ui/HeroParallex';
 import BackgroundBoxesComponent from '../components/ui/BackgroundBoxesComponent';
 import HeroHighlightComponent from '../components/ui/HeroHighlightComponent';
 import InfiniteCardsComponent from '../components/ui/InfiniteCardsComponent';
 import TextContent1 from '../components/TextContent1';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'; // Adapter for using dayjs with MUI pickers
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import ScheduleFreeQuote from '../components/ScheduleFreeQuote';
 import MovingBorderComponent from '../components/ui/MovingBorderComponent';
-import CardStackComponent from '../components/ui/CardStackComponent';
 import BackgroundGradientComponent from '../components/ui/BackgroundGradientComponent';
 import BackgroundBeamsComponent from '../components/ui/BackgroundBeamsComponenet';
-import GalleryComponent from '../components/GalleryComponent';
+import { Modal, Button } from 'flowbite-react';
 
 
 
@@ -86,15 +79,38 @@ const products = [
    { title: 'Retaining Walls', link: '/retaining-walls', thumbnail: retaining6 },
    { title: 'Wood Decks', link: '/wood-decks', thumbnail: deck6 },
    { title: 'Fences', link: '/fences', thumbnail: fences7 },
- ];
- 
+];
+
 
 // Main Home component
+
 export default function Home() {
+   const [showModal, setShowModal] = useState(false);
+
+   useEffect(() => {
+      const hasVisited = localStorage.getItem('hasVisited');
+      if (!hasVisited) {
+         setShowModal(true);
+         localStorage.setItem('hasVisited', 'true');
+      }
+   }, []);
+
+   const closeModal = () => {
+      setShowModal(false);
+   };
+
+   const openModal = () => {
+      setShowModal(true);
+   };
 
    return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-         <div>
+         <div className="relative">
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+               <Button onClick={openModal} color="green" className="px-6 py-0 text-xs md:text-md md:font-semibold font-bold rounded-full shadow-lg bg-gradient-to-r from-green-300 via-green-500 to-cyan-500 text-white">
+               Grab Your 10% Discount Now
+               </Button>
+            </div>
             <BackgroundBoxesComponent />
             <HeroHighlightComponent />
             <HeroParallax products={products} />
@@ -106,33 +122,47 @@ export default function Home() {
                pText="Your Gateway to Exceptional Design and Quality Craftsmanship!"
                textButton=''
             />
-            <div className='flex flex-row  flex-wrap justify-center bg-gradient-to-br items-center pb-4 pt-0 md:py-10 gap-5 '
-            // style={{
-            //    backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.6) , rgba(0,0,0,0.8), rgba(0,0,0,0.8) , rgba(0,0,0,0.9) )', // Add three colors
-            // }}
-            >
-               <div className='basis-1/2 flex flex-col h-full justify-center items-center '>
+            <div className='flex flex-row flex-wrap justify-center bg-gradient-to-br items-center pb-4 pt-0 md:py-10 gap-5'>
+               <div className='basis-1/2 flex flex-col h-full justify-center items-center'>
                   <MovingBorderComponent
                      MovingBorderBoxText="Select time to schedule an appointment for a free quote"
                   />
-
-
                </div>
-
-               <div className=' basis-2/5 flex h-full flex-col justify-center align-center '>
-                  <div className='w-full basis-3/5  mt-2'>
-                     <BackgroundGradientComponent className=" w-auto rounded-[22px] sm:w-auto p-0 sm:p-0 bg-gray-200 dark:bg-zinc-300 ">
+               <div className='basis-2/5 flex h-full flex-col justify-center align-center'>
+                  <div className='w-full basis-3/5 mt-2'>
+                     <BackgroundGradientComponent className="w-auto rounded-[22px] sm:w-auto p-0 sm:p-0 bg-gray-200 dark:bg-zinc-300">
                         <ScheduleFreeQuote />
                      </BackgroundGradientComponent>
                   </div>
                </div>
             </div>
-            
 
             <InfiniteCardsComponent />
             <BackgroundBeamsComponent />
 
-
+            {showModal && (
+               <Modal show={showModal} onClose={closeModal} size="lg">
+                  <Modal.Header className="bg-gradient-to-r from-green-400 to-blue-500 text-white text-2xl font-bold">
+                     Limited Time Offer!
+                  </Modal.Header>
+                  <Modal.Body className="bg-gray-100 p-6">
+                     <div className="space-y-6">
+                        <h2 className="text-xl font-semibold text-gray-700">
+                           Fill out the contact form to get <span className="text-red-600">10% off</span> and a free estimate. Hurry, this offer is for a limited time only!
+                        </h2>
+                        <ScheduleFreeQuote />
+                        <p className="text-lg leading-relaxed text-gray-700 font-semibold text-center mt-4">
+                           Don’t miss out on this exclusive deal!
+                        </p>
+                     </div>
+                  </Modal.Body>
+                  <Modal.Footer className="bg-gray-100">
+                     <Button color="green" onClick={closeModal}>
+                        Close
+                     </Button>
+                  </Modal.Footer>
+               </Modal>
+            )}
          </div>
       </LocalizationProvider>
    );
