@@ -69,7 +69,7 @@ export default function App() {
             <Route path='/custom-landscapes' element={<CustomLandscapes />} />
             <Route path='/custom-pools-spas' element={<CustomPoolsAndSpas />} />
          </Routes>
-         <FooterComponent className="w-full " />
+         <FooterComponent className="w-full rounded-none" />
       </BrowserRouter>
    )
 }
