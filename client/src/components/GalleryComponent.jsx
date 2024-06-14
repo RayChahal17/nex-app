@@ -79,12 +79,12 @@ import retaining6 from '../assets/services/retaining6.jpeg';
 import retaining7 from '../assets/services/retaining7.jpeg';
 
 const images = [
-   aggregate1, basement1, basement2, basement3, basement4, basement5, basement6, bath1, bath2, bath3, bath4,
-   bath5, bath6, bath7, bath8, bath9, bath10, concrete1, concrete2, concrete3, concrete4, concrete5,
-   concrete6, concrete7, concrete8, deck1, deck2, deck3, deck4, deck5, deck6, deck7, deck8, deck9,
-   fences1, fences2, fences3, fences4, fences5, fences6, fences7, fences8, fences9, fences10, fences11,
-   fences12, interlock1, interlock2, interlock3, interlock4, interlock5, interlock6, interlock7, interlock8, interlock9,
-   landscaping1, landscaping2, landscaping3, landscaping4, landscaping5, landscaping6, pavers1, pavers2, pavers3,
+   interlock1, interlock2, interlock3, interlock4, interlock5, interlock6, interlock7, interlock8, interlock9, aggregate1, deck1, deck2, deck3, deck4, deck5, deck6, deck7, deck8, deck9,
+   fences1, fences2, fences3,  basement1, basement2, basement3, basement4, basement5, basement6, 
+   bath5, bath6, bath7, concrete1, concrete2, concrete3, concrete4, concrete5,
+   concrete6, concrete7, concrete8, fences4,bath1, bath4, fences5, fences6, fences7, fences8, fences9, fences10, fences11,
+   fences12,
+   landscaping1, landscaping2, landscaping3, landscaping4, landscaping5, landscaping6, bath8, bath9, bath10, pavers1, pavers2, pavers3,
    retaining1, retaining2, retaining3, retaining4, retaining5, retaining6, retaining7
 ];
 
@@ -155,7 +155,7 @@ const Gallery = () => {
                      <img
                         src={image}
                         alt={`slide-${index}`}
-                        className="w-full h-40 md:h-48 lg:h-60 object-cover transition-transform duration-300 transform hover:scale-105 shadow-lg"
+                        className="w-full h-48 md:h-48 lg:h-60 object-cover transition-transform duration-300 transform hover:scale-105 shadow-lg"
                      />
                   </div>
                ))}
