@@ -172,11 +172,12 @@ export const deleteEstimate = async (req, res) => {
       if (req.path.includes('permanent-delete')) {
          appointment = await DeletedAppointment.findByIdAndDelete(id);
       } else {
-         appointment = await Estimate.findById(id);
+         appointment = await Estimate.findById(id) || await ConfirmedAppointment.findById(id);
          if (appointment) {
             const deletedAppointment = new DeletedAppointment(appointment.toObject());
             await deletedAppointment.save();
             await Estimate.findByIdAndDelete(id);
+            await ConfirmedAppointment.findByIdAndDelete(id);
          }
       }
 
@@ -189,6 +190,7 @@ export const deleteEstimate = async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to delete appointment' });
    }
 };
+
 
 /**
  * Permanently deletes an estimate from the DeletedAppointment and ConfirmedAppointment collections.
