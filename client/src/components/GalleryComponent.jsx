@@ -132,6 +132,7 @@ const Gallery = () => {
             settings: {
                slidesToShow: 2,
                slidesToScroll: 2,
+               dots: false, // Hide dots on smaller devices
             },
          },
          {
