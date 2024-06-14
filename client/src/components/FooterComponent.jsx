@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 const FooterComponent = () => {
    return (
-      <Footer container={true} className="w-full p-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-gray-50">
+      <Footer container={true} className="w-full p-0 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-gray-50" style={{ borderRadius: '0' }}>
          <div className="w-full">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 py-12 px-6">
                <div>
