@@ -1,4 +1,4 @@
-import { Avatar, Button, Dropdown, MegaMenu, Navbar, TextInput } from 'flowbite-react';
+import { Avatar, Button, Dropdown, Navbar, TextInput } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import nex_logo from '../assets/images/nex1.png';
@@ -17,6 +17,7 @@ export default function Header() {
    const { currentUser } = useSelector((state) => state.user);
    const theme = useSelector((state) => state.theme.theme);
    const [searchTerm, setSearchTerm] = useState('');
+   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
 
    const avatarLabel = currentUser?.username?.charAt(0).toUpperCase() || 'U';
 
@@ -53,18 +54,22 @@ export default function Header() {
       }
    };
 
+   const toggleServicesDropdown = (e) => {
+      e.stopPropagation();
+      setServicesDropdownOpen(!servicesDropdownOpen);
+   };
+
    return (
       <Wrapper>
          <Navbar className='border-b-2'>
             <Link to='/' className='logoWrapper'>
-               <img alt='Edurayte Logo' src={nex_logo}></img>
+               <img alt='Edurayte Logo' src={nex_logo} className="h-10" />
             </Link>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className='hidden lg:flex'>
                <TextInput
                   type='text'
                   placeholder='Search...'
-                  rightIcon={AiOutlineSearch}
-                  className='hidden lg:inline cursor-pointer'
+                  icon={AiOutlineSearch}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                />
@@ -81,7 +86,7 @@ export default function Header() {
                      arrowIcon={false}
                      inline
                      label={
-                        <div className='flex ml-5 justify-center items-center rounded-full w-12 h-12 bg-gradient-to-r shadow-md shadow-lime-100 hover:shadow-lime-300 from-green-500 to-lime-400 text-white font-bold text-2xl cursor-pointer'>
+                        <div className='flex ml-5 justify-center items-center rounded-full w-12 h-12 bg-gradient-to-r shadow-md from-green-500 to-lime-400 text-white font-bold text-2xl cursor-pointer'>
                            {avatarLabel}
                         </div>
                      }
@@ -122,76 +127,68 @@ export default function Header() {
                   </Link>
                </Navbar.Link>
                <Navbar.Link>
-                  <MegaMenu.Dropdown toggle={<span className="cursor-pointer">Services</span>} className="bg-white bg-opacity-90 cursor-pointer">
-                     <ul className="grid grid-cols-3">
-                        <div className="space-y-4 p-4">
-                           <li>
-                              <Link to='/concrete' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Concrete Builds
-                              </Link>
-                           </li>
-                           <li>
-                              <Link to='/interlock-services' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Interlocks Services
-                              </Link>
-                           </li>
-                           {/* <li>
-                              <Link to='/stone-walkways' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Stone Walkways
-                              </Link>
-                           </li> */}
-                           <li>
-                              <Link to='/retaining-walls' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Retaining Walls
-                              </Link>
-                           </li>
+                  <div className="relative">
+                     <button onClick={toggleServicesDropdown} className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        Services
+                     </button>
+                     {servicesDropdownOpen && (
+                        <div className='absolute left-0 mt-2 w-full lg:w-64 bg-white border rounded-lg shadow-lg z-50'>
+                           <ul className='p-4 grid grid-cols-1 lg:grid-cols-3 gap-4'>
+                              <div className="space-y-4">
+                                 <li>
+                                    <Link to='/concrete' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Concrete Builds
+                                    </Link>
+                                 </li>
+                                 <li>
+                                    <Link to='/interlock-services' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Interlocks Services
+                                    </Link>
+                                 </li>
+                                 <li>
+                                    <Link to='/retaining-walls' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Retaining Walls
+                                    </Link>
+                                 </li>
+                              </div>
+                              <div className="space-y-4">
+                                 <li>
+                                    <Link to='/wood-decks' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Wood Decks
+                                    </Link>
+                                 </li>
+                                 <li>
+                                    <Link to='/fences' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Fences
+                                    </Link>
+                                 </li>
+                                 <li>
+                                    <Link to='/kitchen-renovations' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Kitchen Renovations
+                                    </Link>
+                                 </li>
+                              </div>
+                              <div className="space-y-4">
+                                 <li>
+                                    <Link to='/basement-renovations' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Basement Renovations
+                                    </Link>
+                                 </li>
+                                 <li>
+                                    <Link to='/bathroom-renovations' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Bathroom Renovations
+                                    </Link>
+                                 </li>
+                                 <li>
+                                    <Link to='/custom-landscapes' className="block px-4 py-2 hover:text-primary-600 dark:hover:text-primary-500 cursor-pointer">
+                                       Custom Landscapes
+                                    </Link>
+                                 </li>
+                              </div>
+                           </ul>
                         </div>
-                        <div className="space-y-4 p-4">
-                           <li>
-                              <Link to='/wood-decks' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Wood Decks
-                              </Link>
-                           </li>
-                           <li>
-                              <Link to='/fences' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Fences
-                              </Link>
-                           </li>
-                           <li>
-                              <Link to='/kitchen-renovations' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Kitchen Renovations
-                              </Link>
-                           </li>
-                           {/* <li>
-                              <Link to='/home-additions' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Home Additions
-                              </Link>
-                           </li> */}
-                        </div>
-                        <div className="space-y-4 p-4">
-                           <li>
-                              <Link to='/basement-renovations' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Basement Renovations
-                              </Link>
-                           </li>
-                           <li>
-                              <Link to='/bathroom-renovations' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Bathroom Renovations
-                              </Link>
-                           </li>
-                           <li>
-                              <Link to='/custom-landscapes' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Custom Landscapes
-                              </Link>
-                           </li>
-                           {/* <li>
-                              <Link to='/custom-pools-spas' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
-                                 Custom Pools & Spas
-                              </Link>
-                           </li> */}
-                        </div>
-                     </ul>
-                  </MegaMenu.Dropdown>
+                     )}
+                  </div>
                </Navbar.Link>
                <Navbar.Link>
                   <Link to='/gallery' className="transition-all duration-300 hover:text-primary-600 dark:hover:text-primary-500 hover:underline cursor-pointer">
