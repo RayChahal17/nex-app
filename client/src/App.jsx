@@ -35,6 +35,25 @@ import CustomLandscapes from './pages/services/CustomLandscapes'
 import CustomPoolsAndSpas from './pages/services/CustomPoolsAndSpas'
 import ScrollToTop from './components/ScrollToTop'
 
+function DashboardRoutes() {
+   const location = useLocation();
+   const tab = new URLSearchParams(location.search).get('tab');
+
+   switch (tab) {
+      case 'calc-estimate':
+         return <CalcEstimate />;
+      case 'profile':
+         return <Profile />;
+      case 'appointments':
+         return <Appointments />;
+      case 'busy-times':
+         return <BusyTimes />;
+      default:
+         return <DefaultDashboardContent />;
+   }
+}
+
+
 export default function App() {
    return (
       <BrowserRouter>
