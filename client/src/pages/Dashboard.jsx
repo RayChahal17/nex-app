@@ -6,6 +6,7 @@ import DashAppointments from '../components/DashAppointments';
 import DashBusyTimesManager from '../components/DashBusyTimeManager';
 import CalcEstimate from '../components/CalcEstimate';
 import SubmitCalcEstimate from '../components/SubmitCalcEstimate';
+import ShowCalcEstimates from '../components/ShowCalcEstimates';
 
 export default function Dashboard() {
    const location = useLocation();
@@ -31,6 +32,7 @@ export default function Dashboard() {
             <CalcEstimate setSubmittedData={setSubmittedData} />
          );
       }
+      if (tab === 'show-calc-estimates') return <ShowCalcEstimates />;
       return <div>Welcome to your dashboard!</div>;
    };
 
