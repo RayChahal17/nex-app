@@ -67,6 +67,13 @@ export default function DashSidebar() {
                      </Sidebar.Item>
                   </Link>
                )}
+               {currentUser && currentUser.isAdmin && (
+                  <Link to="/dashboard?tab=show-calc-estimates">
+                     <Sidebar.Item active={tab === 'show-calc-estimates'} icon={HiClock}>
+                        Show Estimates
+                     </Sidebar.Item>
+                  </Link>
+               )}
                <Sidebar.Item onClick={handleSignOut} icon={HiArrowSmRight} className="cursor-pointer">
                   Sign Out
                </Sidebar.Item>
