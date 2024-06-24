@@ -27,9 +27,9 @@ export default function Dashboard() {
       if (tab === 'busy-times') return <DashBusyTimesManager />;
       if (tab === 'calc-estimate') {
          return submittedData ? (
-            <SubmitCalcEstimate formData={submittedData} />
+            <SubmitCalcEstimate formData={submittedData} setSubmittedData={setSubmittedData} />
          ) : (
-            <CalcEstimate setSubmittedData={setSubmittedData} />
+            <CalcEstimate setSubmittedData={setSubmittedData} initialData={submittedData} />
          );
       }
       if (tab === 'show-calc-estimates') return <ShowCalcEstimates />;
