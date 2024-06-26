@@ -10,6 +10,7 @@ import contactRoutes from './routes/contact.route.js';
 import busyTimeRoutes from './routes/busyTime.route.js';
 import calcEstimateRoutes from './routes/calcEstimate.route.js';
 import appointmentRoutes from './routes/appointment.routes.js';
+import currentJobRoutes from './routes/currentJob.route.js';
 import { errorHandler } from './utils/error.js';
 
 dotenv.config();
@@ -36,9 +37,11 @@ app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/post', postRoutes);
 app.use('/api/estimate', estimateRoutes);
+app.use('/api/estimate', calcEstimateRoutes); // Ensure this path matches the frontend request
 app.use('/api/contact', contactRoutes);
 app.use('/api/busy-times', busyTimeRoutes);
 app.use('/api/calc-estimate', calcEstimateRoutes);
+app.use('/api/current-jobs', currentJobRoutes); // Add this line
 app.use('/api', appointmentRoutes);
 
 // Serve static files
