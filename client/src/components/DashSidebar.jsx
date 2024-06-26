@@ -74,6 +74,20 @@ export default function DashSidebar() {
                      </Sidebar.Item>
                   </Link>
                )}
+               {currentUser && currentUser.isAdmin && (
+                     <Link to="/dashboard?tab=manage-current-jobs">
+                        <Sidebar.Item active={tab === 'manage-current-jobs'} icon={HiDocumentText}>
+                           Current Jobs Manager
+                        </Sidebar.Item>
+                     </Link>
+                  )}
+                  {currentUser && currentUser.isAdmin && (
+                     <Link to="/dashboard?tab=schedule-jobs">
+                        <Sidebar.Item active={tab === 'schedule-jobs'} icon={HiDocumentText}>
+                           Jobs Scheduler
+                        </Sidebar.Item>
+                     </Link>
+                  )}
                <Sidebar.Item onClick={handleSignOut} icon={HiArrowSmRight} className="cursor-pointer">
                   Sign Out
                </Sidebar.Item>

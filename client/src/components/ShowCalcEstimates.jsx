@@ -10,11 +10,14 @@ export default function ShowCalcEstimates() {
    const [statusFilter, setStatusFilter] = useState('All');
    const [statusOptions] = useState([
       'All', 'Est. Pending', 'Est. Completed', 'Est. Cancelled', 'Est. Provided', 'Est. Successful',
-      'Est. Failed', 'Est. Inconsequential', 'Est. Waiting', 'Job In Progress', 'Job in Waiting', 'Job Completed'
+      'Est. Failed', 'Est. Inconsequential', 'Est. Waiting', 'Job Pending', 'Job Waiting', 'Job In Progress', 'Job Completed'
    ]);
    const [showDeleteModal, setShowDeleteModal] = useState(false);
+   const [showStatusModal, setShowStatusModal] = useState(false);
    const [estimateToDelete, setEstimateToDelete] = useState(null);
    const [loading, setLoading] = useState(false);
+   const [estimateToUpdate, setEstimateToUpdate] = useState(null);
+   const [newStatus, setNewStatus] = useState('');
 
    useEffect(() => {
       fetchEstimates();
@@ -94,9 +97,16 @@ export default function ShowCalcEstimates() {
       }
    };
 
-   const handleStatusChange = async (id, newStatus) => {
+   const handleStatusChange = (id, newStatus) => {
+      setEstimateToUpdate(id);
+      setNewStatus(newStatus);
+      setShowStatusModal(true);
+   };
+
+   // Confirm status change in your React component
+   const confirmStatusChange = async () => {
       try {
-         const response = await fetch(`/api/calc-estimate/${id}`, {
+         const response = await fetch(`/api/estimate/${estimateToUpdate}/status`, {
             method: 'PUT',
             headers: {
                'Content-Type': 'application/json',
@@ -104,20 +114,28 @@ export default function ShowCalcEstimates() {
             body: JSON.stringify({ status: newStatus }),
          });
 
-         if (response.status === 200) {
+         if (response.ok) {
             const updatedEstimates = estimates.map(est =>
-               est._id === id ? { ...est, status: newStatus } : est
+               est._id === estimateToUpdate ? { ...est, status: newStatus } : est
             );
             setEstimates(updatedEstimates);
             setFilteredEstimates(updatedEstimates);
-            if (selectedEstimate && selectedEstimate._id === id) {
+            if (selectedEstimate && selectedEstimate._id === estimateToUpdate) {
                setSelectedEstimate({ ...selectedEstimate, status: newStatus });
             }
+         } else {
+            console.error('Failed to update status', response);
          }
       } catch (error) {
          console.error('Error updating status:', error);
+      } finally {
+         setShowStatusModal(false);
       }
    };
+
+
+
+
 
    const renderEstimateDetails = () => {
       if (!selectedEstimate) return null;
@@ -294,11 +312,16 @@ export default function ShowCalcEstimates() {
                               size="sm"
                            >
                               {statusOptions.slice(1).map(status => (
-                                 <option key={status} value={status}>
+                                 <option
+                                    key={status}
+                                    value={status}
+                                    className={['Job Pending', 'Job Waiting', 'Job In Progress'].includes(status) ? ' font-bold text-green-600' : ''}
+                                 >
                                     {status}
                                  </option>
                               ))}
                            </Select>
+
                         </Table.Cell>
                         <Table.Cell>
                            <Button onClick={() => handleViewClick(estimate)} gradientMonochrome="info" size="sm">
@@ -324,6 +347,22 @@ export default function ShowCalcEstimates() {
                      Confirm
                   </Button>
                   <Button onClick={() => setShowDeleteModal(false)} gradientMonochrome="gray" size="sm" className="ml-2">
+                     Cancel
+                  </Button>
+               </Modal.Footer>
+            </Modal>
+         )}
+         {showStatusModal && (
+            <Modal show={showStatusModal} onClose={() => setShowStatusModal(false)}>
+               <Modal.Header>Change Status</Modal.Header>
+               <Modal.Body>
+                  <p>Are you sure you want to change the status to "{newStatus}"?</p>
+               </Modal.Body>
+               <Modal.Footer>
+                  <Button onClick={confirmStatusChange} gradientMonochrome="success" size="sm">
+                     Confirm
+                  </Button>
+                  <Button onClick={() => setShowStatusModal(false)} gradientMonochrome="gray" size="sm" className="ml-2">
                      Cancel
                   </Button>
                </Modal.Footer>
