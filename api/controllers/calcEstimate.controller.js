@@ -104,7 +104,7 @@ const createEmailContent = (estimateData) => {
          </section>
  
          <footer style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px;">
-           <p>Thank you for choosing NexRenovations. If you have any questions, please feel free to contact us at (437) 799-2029 or email@example.com.</p>
+           <p>Thank you for choosing NexRenovations. If you have any questions, please feel free to contact us at (437) 799-2029</p>
            <p>Best Regards,<br><strong>NexRenovations Team</strong></p>
          </footer>
        </main>
