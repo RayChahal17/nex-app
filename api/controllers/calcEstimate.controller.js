@@ -1,4 +1,5 @@
 import CalcEstimate from '../models/calcEstimate.model.js';
+import CurrentJob from '../models/currentJob.model.js';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
@@ -25,6 +26,7 @@ const createEmailContent = (estimateData) => {
            <p><strong>City:</strong> ${estimateData.customerInfo.city}</p>
            <p><strong>Phone:</strong> ${estimateData.customerInfo.phone}</p>
            <p><strong>Email:</strong> ${estimateData.customerInfo.email}</p>
+                      <p><strong>Additional Notes:</strong> ${estimateData.customerInfo.note}</p>
          </section>
  
          <section style="margin-top: 20px;">
@@ -120,12 +122,10 @@ const transporter = nodemailer.createTransport({
 
 // controllers/calcEstimateController.js
 export const createCalcEstimate = async (req, res) => {
-   console.log('Received request:', req.body);
    try {
       const { formData } = req.body;
       const estimateData = typeof formData === 'string' ? JSON.parse(formData) : formData;
 
-      // Save estimate data to the database
       const newEstimate = new CalcEstimate(estimateData);
       await newEstimate.save();
 
@@ -153,9 +153,6 @@ export const createCalcEstimate = async (req, res) => {
    }
 };
 
-
-
-
 export const getCalcEstimates = async (req, res) => {
    try {
       const estimates = await CalcEstimate.find();
@@ -167,7 +164,67 @@ export const getCalcEstimates = async (req, res) => {
       console.error('Error fetching estimates:', error);
       res.status(500).json({
          success: false,
-         message: 'Failed to fetch estimates ????????',
+         message: 'Failed to fetch estimates',
+         error: error.message,
+      });
+   }
+};
+
+
+// When the status of a CalcEstimate is changed, create a new CurrentJob if necessary
+// Ensure the createEmailContent function and the transporter setup are also included here
+export const updateEstimateStatus = async (req, res) => {
+   try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const updatedEstimate = await CalcEstimate.findByIdAndUpdate(
+         id,
+         { status },
+         { new: true }
+      );
+
+      if (!updatedEstimate) {
+         return res.status(404).json({
+            success: false,
+            message: 'Estimate not found',
+         });
+      }
+
+      if (['Job Pending', 'Job Waiting', 'Job In Progress'].includes(status)) {
+         const currentJobData = {
+            sections: updatedEstimate.sections,
+            additionalCosts: updatedEstimate.additionalCosts,
+            stairs: updatedEstimate.stairs,
+            costPerSqFeet: updatedEstimate.costPerSqFeet,
+            discount: updatedEstimate.discount,
+            discountType: updatedEstimate.discountType,
+            customerInfo: updatedEstimate.customerInfo,
+            finalEstimate: updatedEstimate.finalEstimate,
+            discountedEstimate: updatedEstimate.discountedEstimate,
+            serviceType: updatedEstimate.serviceType,
+            status: updatedEstimate.status,
+            date: updatedEstimate.date,
+            notes: updatedEstimate.notes || [],
+            payments: [],
+            progress: [],
+            schedule: [],
+            workers: [],
+         };
+
+         const newCurrentJob = new CurrentJob(currentJobData);
+         await newCurrentJob.save();
+      }
+
+      res.status(200).json({
+         success: true,
+         estimate: updatedEstimate,
+      });
+   } catch (error) {
+      console.error('Error updating estimate status:', error);
+      res.status(500).json({
+         success: false,
+         message: 'Failed to update estimate status',
          error: error.message,
       });
    }
@@ -196,38 +253,6 @@ export const getCalcEstimateById = async (req, res) => {
    }
 };
 
-export const updateEstimateStatus = async (req, res) => {
-   try {
-      const { id } = req.params;
-      const { status } = req.body;
-
-      const updatedEstimate = await CalcEstimate.findByIdAndUpdate(
-         id,
-         { status },
-         { new: true }
-      );
-
-      if (!updatedEstimate) {
-         return res.status(404).json({
-            success: false,
-            message: 'Estimate not found',
-         });
-      }
-
-      res.status(200).json({
-         success: true,
-         estimate: updatedEstimate,
-      });
-   } catch (error) {
-      console.error('Error updating estimate status:', error);
-      res.status(500).json({
-         success: false,
-         message: 'Failed to update estimate status',
-         error: error.message,
-      });
-   }
-};
-
 export const getCalcEstimatesByAddress = async (req, res) => {
    try {
       const { address } = req.params;
@@ -250,6 +275,7 @@ export const deleteCalcEstimate = async (req, res) => {
    try {
       const { id } = req.params;
       await CalcEstimate.findByIdAndDelete(id);
+      await CurrentJob.findOneAndDelete({ estimateId: id });
       res.status(200).json({
          success: true,
          message: 'Estimate deleted successfully',
