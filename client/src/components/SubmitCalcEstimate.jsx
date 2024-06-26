@@ -98,7 +98,7 @@ export default function SubmitCalcEstimate({ formData }) {
                   <img src={logo} alt="NexRenovations Logo" className="w-32 mb-4" />
                   <p className="font-bold">NexRenovations</p>
                   <p>(437) 799-2029</p>
-                  <p>info@nexrenovations.com</p>
+{/*                   <p>info@nexrenovations.com</p> */}
                </div>
                <div className="text-right">
                   <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
