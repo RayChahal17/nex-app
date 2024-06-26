@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from 'flowbite-react';
-import { HiUser, HiArrowSmRight, HiDocumentText, HiClock } from 'react-icons/hi';
+import { HiUser, HiLogout, HiCalendar, HiOutlineCalculator, HiClipboardList, HiOutlineDocumentText, HiOutlineBriefcase } from 'react-icons/hi';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { signoutSuccess } from '../redux/user/userSlice';
@@ -47,7 +47,7 @@ export default function DashSidebar() {
 
                {currentUser && currentUser.isAdmin && (
                   <Link to="/dashboard?tab=appointments">
-                     <Sidebar.Item active={tab === 'appointments'} icon={HiDocumentText}>
+                     <Sidebar.Item active={tab === 'appointments'} icon={HiCalendar}>
                         Appointments
                      </Sidebar.Item>
                   </Link>
@@ -55,40 +55,41 @@ export default function DashSidebar() {
 
                {currentUser && currentUser.isAdmin && (
                   <Link to="/dashboard?tab=busy-times">
-                     <Sidebar.Item active={tab === 'busy-times'} icon={HiClock}>
+                     <Sidebar.Item active={tab === 'busy-times'} icon={HiOutlineDocumentText}>
                         Busy Times
                      </Sidebar.Item>
                   </Link>
                )}
                {currentUser && currentUser.isAdmin && (
                   <Link to="/dashboard?tab=calc-estimate">
-                     <Sidebar.Item active={tab === 'calc-estimate'} icon={HiClock}>
+                     <Sidebar.Item active={tab === 'calc-estimate'} icon={HiOutlineCalculator}>
                         Calculate Estimate
                      </Sidebar.Item>
                   </Link>
                )}
                {currentUser && currentUser.isAdmin && (
                   <Link to="/dashboard?tab=show-calc-estimates">
-                     <Sidebar.Item active={tab === 'show-calc-estimates'} icon={HiClock}>
+                     <Sidebar.Item active={tab === 'show-calc-estimates'} icon={HiClipboardList}>
                         Show Estimates
                      </Sidebar.Item>
                   </Link>
                )}
                {currentUser && currentUser.isAdmin && (
-                     <Link to="/dashboard?tab=manage-current-jobs">
-                        <Sidebar.Item active={tab === 'manage-current-jobs'} icon={HiDocumentText}>
-                           Current Jobs Manager
-                        </Sidebar.Item>
-                     </Link>
-                  )}
-                  {currentUser && currentUser.isAdmin && (
-                     <Link to="/dashboard?tab=schedule-jobs">
-                        <Sidebar.Item active={tab === 'schedule-jobs'} icon={HiDocumentText}>
-                           Jobs Scheduler
-                        </Sidebar.Item>
-                     </Link>
-                  )}
-               <Sidebar.Item onClick={handleSignOut} icon={HiArrowSmRight} className="cursor-pointer">
+                  <Link to="/dashboard?tab=schedule-jobs">
+                     <Sidebar.Item active={tab === 'schedule-jobs'} icon={HiOutlineBriefcase}>
+                        Jobs Scheduler
+                     </Sidebar.Item>
+                  </Link>
+               )}
+               {currentUser && currentUser.isAdmin && (
+                  <Link to="/dashboard?tab=manage-current-jobs">
+                     <Sidebar.Item active={tab === 'manage-current-jobs'} icon={HiClipboardList}>
+                        Current Jobs Manager
+                     </Sidebar.Item>
+                  </Link>
+               )}
+               
+               <Sidebar.Item onClick={handleSignOut} icon={HiLogout} className="cursor-pointer">
                   Sign Out
                </Sidebar.Item>
             </Sidebar.ItemGroup>

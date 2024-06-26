@@ -298,7 +298,16 @@ export default function ShowCalcEstimates() {
                </Table.Head>
                <Table.Body>
                   {filteredEstimates.map((estimate) => (
-                     <Table.Row key={estimate._id}>
+                     <Table.Row
+                        key={estimate._id}
+                        className={
+                           ['Job Pending', 'Job Waiting', 'Job In Progress'].includes(estimate.status)
+                              ? 'font-bold text-green-600'
+                              : estimate.status === 'Job Completed'
+                                 ? 'text-blue-600 font-bold'
+                                 : ''
+                        }
+                     >
                         <Table.Cell>{new Date(estimate.date).toLocaleDateString()}</Table.Cell>
                         <Table.Cell>{estimate.customerInfo.name}</Table.Cell>
                         <Table.Cell>{estimate.customerInfo.address}</Table.Cell>
@@ -315,13 +324,15 @@ export default function ShowCalcEstimates() {
                                  <option
                                     key={status}
                                     value={status}
-                                    className={['Job Pending', 'Job Waiting', 'Job In Progress'].includes(status) ? ' font-bold text-green-600' : ''}
+                                    className={`
+                        ${['Job Pending', 'Job Waiting', 'Job In Progress'].includes(status) ? 'font-bold text-green-600' : ''}
+                        ${status === 'Job Completed' ? 'font-bold text-blue-600' : ''}
+                     `}
                                  >
                                     {status}
                                  </option>
                               ))}
                            </Select>
-
                         </Table.Cell>
                         <Table.Cell>
                            <Button onClick={() => handleViewClick(estimate)} gradientMonochrome="info" size="sm">
@@ -334,6 +345,7 @@ export default function ShowCalcEstimates() {
                      </Table.Row>
                   ))}
                </Table.Body>
+
             </Table>
          )}
          {estimateToDelete && (

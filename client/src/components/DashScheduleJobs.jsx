@@ -492,11 +492,13 @@ export default function ScheduleJobs() {
                      className="w-full"
                   >
                      <option value="">Select Job</option>
-                     {jobs.map(job => (
-                        <option key={job._id} value={job._id}>
-                           {job.customerInfo.name}, {job.customerInfo.city} ({job.status})
-                        </option>
-                     ))}
+                     {jobs
+                        .filter(job => ['Job Pending', 'Job Waiting', 'Job In Progress'].includes(job.status))
+                        .map(job => (
+                           <option key={job._id} value={job._id}>
+                              {job.customerInfo.name}, {job.customerInfo.city} ({job.status})
+                           </option>
+                        ))}
                   </Select>
                </div>
                <div>
@@ -552,7 +554,6 @@ export default function ScheduleJobs() {
                         </Button>
                      </div>
                   ))}
-
                </div>
             </div>
             {renderSummarySection()}
@@ -633,7 +634,6 @@ export default function ScheduleJobs() {
 
       const timeOrder = ['morning', 'noon', 'evening', 'whole day'];
 
-      // Group schedule entries by date and sort dates
       const groupedSchedule = job.schedule.reduce((acc, entry) => {
          const date = entry.date;
          if (!acc[date]) acc[date] = [];
@@ -659,8 +659,8 @@ export default function ScheduleJobs() {
                <strong>Scheduled Dates:</strong> {sortedDates.map(date => formatDate(date)).join(', ')}
             </div>
             {sortedDates.map(date => (
-               <div key={date} className="mt-4 bg-blue-200 p-5 py-10 shadow-md rounded-lg border">
-                  <h4 className="text-xl text-red-800 font-semibold md:mb-2 mb-0">{formatDate(date)}</h4>
+               <div key={date} className="mt-4 bg-blue-200 md:p-5 p-2 md:py-10 py-2 shadow-md rounded-lg border">
+                  <h4 className="text-xl text-green-700 font-semibold md:mb-2 mb-0">{formatDate(date)}</h4>
                   {groupedSchedule[date]
                      .sort((a, b) => timeOrder.indexOf(a.time) - timeOrder.indexOf(b.time))
                      .map((entry, entryIndex) => (
@@ -738,8 +738,9 @@ export default function ScheduleJobs() {
 
 
 
+
    const sortedJobs = [...jobs]
-      .filter(job => job.status !== 'Job Completed' && (job.schedule.length === 0 || new Date(job.schedule[0]?.date) >= new Date().setHours(0, 0, 0, 0)))
+      .filter(job => job.schedule.length > 0 && job.status !== 'Job Completed')
       .sort((a, b) => {
          if (sortOption === 'nearest') {
             return new Date(a.schedule[0]?.date) - new Date(b.schedule[0]?.date);
@@ -892,7 +893,7 @@ export default function ScheduleJobs() {
          ) : (
             <>
                {renderCalendar()}
-               <div className="md:mt-10 mt-5  bg-green-200 md:p-10 p-2 border border-rounded rounded-lg border-solid border-green-400 ">
+               <div className="md:mt-10 mt-5 bg-green-200 md:p-10 p-2 border border-rounded rounded-lg border-solid border-green-400">
                   <h1 className="md:text-4xl text-green-700 font-bold text-center mb-4">Summary of Scheduled Jobs</h1>
                   <Select
                      value={sortOption}
@@ -923,7 +924,6 @@ export default function ScheduleJobs() {
                         {renderJobDetails(job)}
                      </div>
                   ))}
-
                </div>
                {renderUnassignedJobs()}
                {renderToggleOldJobsButton()}
@@ -933,7 +933,7 @@ export default function ScheduleJobs() {
          )}
       </div>
    );
-   f
+
 
 
 
