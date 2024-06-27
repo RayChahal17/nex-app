@@ -18,7 +18,9 @@ export default function ShowCalcEstimates() {
    const [loading, setLoading] = useState(false);
    const [estimateToUpdate, setEstimateToUpdate] = useState(null);
    const [newStatus, setNewStatus] = useState('');
-
+   const [statusChangeMessage, setStatusChangeMessage] = useState('');
+   const [showStatusChangeMessageModal, setShowStatusChangeMessageModal] = useState(false);
+   
    useEffect(() => {
       fetchEstimates();
    }, []);
@@ -102,38 +104,60 @@ export default function ShowCalcEstimates() {
       setNewStatus(newStatus);
       setShowStatusModal(true);
    };
-
-   // Confirm status change in your React component
+   
    const confirmStatusChange = async () => {
       try {
-         const response = await fetch(`/api/estimate/${estimateToUpdate}/status`, {
-            method: 'PUT',
-            headers: {
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ status: newStatus }),
-         });
-
-         if (response.ok) {
-            const updatedEstimates = estimates.map(est =>
-               est._id === estimateToUpdate ? { ...est, status: newStatus } : est
-            );
-            setEstimates(updatedEstimates);
-            setFilteredEstimates(updatedEstimates);
-            if (selectedEstimate && selectedEstimate._id === estimateToUpdate) {
-               setSelectedEstimate({ ...selectedEstimate, status: newStatus });
+         const response = await fetch(`/api/current-jobs/${estimateToUpdate}`);
+         const currentJob = await response.json();
+   
+         if (currentJob.job) {
+            // Job exists in current jobs collection
+            if (['Job Pending', 'Job Waiting', 'Job In Progress'].includes(newStatus)) {
+               const statusUpdateResponse = await fetch(`/api/estimate/${estimateToUpdate}/status`, {
+                  method: 'PUT',
+                  headers: {
+                     'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ status: newStatus }),
+               });
+   
+               if (statusUpdateResponse.ok) {
+                  const updatedEstimates = estimates.map(est =>
+                     est._id === estimateToUpdate ? { ...est, status: newStatus } : est
+                  );
+                  setEstimates(updatedEstimates);
+                  setFilteredEstimates(updatedEstimates);
+                  if (selectedEstimate && selectedEstimate._id === estimateToUpdate) {
+                     setSelectedEstimate({ ...selectedEstimate, status: newStatus });
+                  }
+                  setShowStatusModal(false);
+                  setStatusChangeMessage('The job has been added to the scheduler.');
+                  setShowStatusChangeMessageModal(true);
+               } else {
+                  console.error('Failed to update status', statusUpdateResponse);
+               }
+            } else {
+               setShowStatusModal(false);
+               setStatusChangeMessage('Status cannot be changed here but only in the scheduler as the job is currently being worked on.');
+               setShowStatusChangeMessageModal(true);
             }
          } else {
-            console.error('Failed to update status', response);
+            // Job does not exist in current jobs collection
+            if (['Job Pending', 'Job Waiting', 'Job In Progress'].includes(newStatus)) {
+               setShowStatusModal(false);
+               setStatusChangeMessage('The job has been added to the scheduler.');
+               setShowStatusChangeMessageModal(true);
+            } else {
+               setShowStatusModal(false);
+               setStatusChangeMessage('The status cannot be changed here but only in the scheduler.');
+               setShowStatusChangeMessageModal(true);
+            }
          }
       } catch (error) {
-         console.error('Error updating status:', error);
-      } finally {
-         setShowStatusModal(false);
+         console.error('Error checking current job status:', error);
       }
    };
-
-
+   
 
 
 
@@ -365,21 +389,37 @@ export default function ShowCalcEstimates() {
             </Modal>
          )}
          {showStatusModal && (
-            <Modal show={showStatusModal} onClose={() => setShowStatusModal(false)}>
-               <Modal.Header>Change Status</Modal.Header>
-               <Modal.Body>
-                  <p>Are you sure you want to change the status to "{newStatus}"?</p>
-               </Modal.Body>
-               <Modal.Footer>
-                  <Button onClick={confirmStatusChange} gradientMonochrome="success" size="sm">
-                     Confirm
-                  </Button>
-                  <Button onClick={() => setShowStatusModal(false)} gradientMonochrome="gray" size="sm" className="ml-2">
-                     Cancel
-                  </Button>
-               </Modal.Footer>
-            </Modal>
-         )}
+   <Modal show={showStatusModal} onClose={() => setShowStatusModal(false)}>
+      <Modal.Header>Change Status</Modal.Header>
+      <Modal.Body>
+         <p>Are you sure you want to change the status to "{newStatus}"?</p>
+      </Modal.Body>
+      <Modal.Footer>
+         <Button onClick={confirmStatusChange} gradientMonochrome="success" size="sm">
+            Confirm
+         </Button>
+         <Button onClick={() => setShowStatusModal(false)} gradientMonochrome="gray" size="sm" className="ml-2">
+            Cancel
+         </Button>
+      </Modal.Footer>
+   </Modal>
+)}
+
+{showStatusChangeMessageModal && (
+   <Modal show={showStatusChangeMessageModal} onClose={() => setShowStatusChangeMessageModal(false)}>
+      <Modal.Header>Status Change</Modal.Header>
+      <Modal.Body>
+         <p>{statusChangeMessage}</p>
+      </Modal.Body>
+      <Modal.Footer>
+         <Button onClick={() => setShowStatusChangeMessageModal(false)} gradientMonochrome="info" size="sm">
+            Close
+         </Button>
+      </Modal.Footer>
+   </Modal>
+)}
+
+
          {renderEstimateDetails()}
       </div>
    );

@@ -446,50 +446,50 @@ export default function ScheduleJobs() {
 
    const renderBriefWeather = (date, city) => {
       if (!weatherData[date]) return null;
-  
+
       const specificTimes = ['09:00:00', '12:00:00', '15:00:00', '18:00:00', '21:00:00'];
       const briefWeather = weatherData[date].reduce((acc, entry) => {
-          const time = entry.time.split(' ')[1];
-          if (specificTimes.includes(time)) {
-              acc.rainTimes[time] = entry.rain;
-          }
-          acc.tempSum += entry.temp;
-          acc.windSum += entry.wind ? entry.wind.speed : 0;
-          acc.rainSum += entry.rain;
-          acc.count += 1;
-          return acc;
+         const time = entry.time.split(' ')[1];
+         if (specificTimes.includes(time)) {
+            acc.rainTimes[time] = entry.rain;
+         }
+         acc.tempSum += entry.temp;
+         acc.windSum += entry.wind ? entry.wind.speed : 0;
+         acc.rainSum += entry.rain;
+         acc.count += 1;
+         return acc;
       }, { tempSum: 0, rainSum: 0, windSum: 0, rainTimes: {}, count: 0 });
-  
+
       const avgTemp = (briefWeather.tempSum / briefWeather.count).toFixed(1);
       const avgRain = (briefWeather.rainSum / briefWeather.count).toFixed(1);
       const avgWind = (briefWeather.windSum / briefWeather.count).toFixed(1);
-  
+
       return (
-          <div className="flex flex-wrap items-center space-x-2 mt-2 text-sm">
-              <div className="flex items-center text-yellow-600">
-                  <WiThermometer size={18} className="text-yellow-500" />
-                  <span className="ml-1">{avgTemp} °C</span>
-              </div>
-              <div className="flex items-center text-yellow-600">
-                  <WiRain size={18} className="text-yellow-500" />
-                  <span className={`ml-1 ${avgRain >= 0.1 ? 'text-red-500' : 'text-yellow-500'}`}>{avgRain} mm</span>
-              </div>
-              <div className="flex items-center text-yellow-600">
-                  <WiStrongWind size={18} className="text-yellow-500" />
-                  <span className="ml-1">{avgWind} m/s</span>s
-              </div>
-              <div className=" pl-5 flex flex-wrap items-center space-x-2 mt-2 sm:mt-0">
-                  {Object.entries(briefWeather.rainTimes).map(([time, rain], index) => (
-                      <div key={index} className="flex items-center">
-                          <WiRain size={18} className="text-blue-500" />
-                          <span className={`ml-1 ${rain >= 0.1 ? 'text-red-500' : 'text-blue-500'}`}>{time.split(':')[0]}:00 - {rain} mm</span>
-                      </div>
-                  ))}
-              </div>
-          </div>
+         <div className="flex flex-wrap items-center space-x-2 mt-2 text-sm">
+            <div className="flex items-center text-yellow-600">
+               <WiThermometer size={18} className="text-yellow-600" />
+               <span className="ml-1">{avgTemp} °C</span>
+            </div>
+            <div className="flex items-center text-yellow-600">
+               <WiRain size={18} className="text-yellow-600" />
+               <span className={`ml-1 ${avgRain >= 0.1 ? 'text-red-500' : 'text-yellow-600'}`}>{avgRain} mm</span>
+            </div>
+            <div className="flex items-center text-yellow-600">
+               <WiStrongWind size={18} className="text-yellow-600" />
+               <span className="ml-1">{avgWind} m/s</span>s
+            </div>
+            <div className=" pl-5 flex flex-wrap items-center space-x-2 mt-2 sm:mt-0">
+               {Object.entries(briefWeather.rainTimes).map(([time, rain], index) => (
+                  <div key={index} className="flex items-center">
+                     <WiRain size={18} className="text-blue-500" />
+                     <span className={`ml-1 ${rain >= 0.1 ? 'text-red-500' : 'text-blue-500'}`}>{time.split(':')[0]}:00 - {rain} mm</span>
+                  </div>
+               ))}
+            </div>
+         </div>
       );
-  };
-  
+   };
+
 
 
 
@@ -514,9 +514,9 @@ export default function ScheduleJobs() {
          const currentWeekEnd = new Date(currentWeekStart);
          currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
 
-         if (dateWithoutTime === today) return 'bg-green-500 text-gray-800 italic border border-dotted border-2 border-gray-800 rounded-xl';
-         if (dateWithoutTime < today) return 'bg-gray-400 text-slate-700';
-         if (date.getDay() === 0) return 'bg-red-100';
+         if (dateWithoutTime === today) return 'bg-green-200 text-gray-800 italic border border-dotted border-2 border-gray-800 rounded-xl';
+         if (dateWithoutTime < today) return 'bg-gray-300 text-slate-700';
+         if (date.getDay() === 0) return 'bg-green-100';
          if (date.getDay() === 6) return 'bg-green-100';
          if (date >= currentWeekStart && date <= currentWeekEnd) return 'bg-green-200';
          if (date > currentWeekEnd) return 'bg-gray-200';
@@ -573,10 +573,10 @@ export default function ScheduleJobs() {
    const renderJobsForDay = (date) => {
       const timeSlots = ['morning', 'noon', 'evening', 'whole day'];
       const timeColors = {
-         morning: 'bg-green-400',
+         morning: 'bg-yellow-100',
          noon: 'bg-yellow-200',
-         evening: 'bg-red-200',
-         'whole day': 'bg-gray-400',
+         evening: 'bg-yellow-300',
+         'whole day': 'bg-yellow-500',
       };
 
       return timeSlots.map(time => {
@@ -814,10 +814,10 @@ export default function ScheduleJobs() {
 
    const renderJobDetails = (job, showStatusChange = true) => {
       const timeColors = {
-         morning: 'bg-green-500',
-         noon: 'bg-yellow-300',
-         evening: 'bg-red-300',
-         'whole day': 'bg-gray-400',
+         morning: 'bg-yellow-100',
+         noon: 'bg-yellow-200',
+         evening: 'bg-yellow-300',
+         'whole day': 'bg-yellow-500',
       };
 
       const formatDate = (date) => {
@@ -840,7 +840,7 @@ export default function ScheduleJobs() {
       const sortedDates = Object.keys(groupedSchedule).sort((a, b) => new Date(a) - new Date(b));
 
       return (
-         <div className="mt-4 md:p-10 p-4 bg-blue-100 border-solid border-green-600 shadow-md rounded-lg border">
+         <div className="mt-4 md:p-5 p-2 bg-blue-50 border-solid border-green-600 shadow-md rounded-lg border">
             <h3 className="text-2xl text-red-800 font-bold mb-2">{job.customerInfo.name} ({job.status})</h3>
             <div className="mb-2">
                <strong>Address:</strong> {job.customerInfo.address}, {job.customerInfo.city}
@@ -855,7 +855,7 @@ export default function ScheduleJobs() {
                <strong>Scheduled Dates:</strong> {sortedDates.map(date => formatDate(date)).join(', ')}
             </div>
             {sortedDates.map(date => (
-               <div key={date} className="mt-4 bg-blue-200 md:p-5 p-2 md:py-10 py-2 shadow-md rounded-lg border">
+               <div key={date} className="mt-4 bg-blue-100 md:p-5 p-2 md:py-10 py-2 shadow-md rounded-lg border">
                   <h4 className="text-xl text-green-700 font-semibold md:mb-2 mb-0">{formatDate(date)}</h4>
                   {groupedSchedule[date]
                      .sort((a, b) => timeOrder.indexOf(a.time) - timeOrder.indexOf(b.time))
@@ -865,7 +865,7 @@ export default function ScheduleJobs() {
                            <div className="md:mb-2 md:p-2 mb-1 p-1 bg-gray-100 rounded-lg shadow-md flex flex-wrap">
                               {entry.notes.length > 0 && (
                                  <div className="w-full md:w-1/2 pr-4">
-                                    <strong className="block mb-2">Notes ({formatDate(entry.date)}):</strong>
+                                    <strong className="block mb-2 text-gray-400">Notes ({formatDate(entry.date)}):</strong>
                                     <ul className="list-disc pl-5">
                                        {entry.notes.map((note, noteIndex) => (
                                           <li key={noteIndex} className="mb-1">{note}</li>
@@ -875,7 +875,7 @@ export default function ScheduleJobs() {
                               )}
                               {entry.tasks.length > 0 && (
                                  <div className="w-full md:w-1/2 pl-4 md:border-l border-gray-300">
-                                    <strong className="block mb-2">Tasks ({formatDate(entry.date)}):</strong>
+                                    <strong className="block mb-2 text-gray-400">Tasks ({formatDate(entry.date)}):</strong>
                                     <ul>
                                        {entry.tasks.map((task, taskIndex) => (
                                           <li key={taskIndex} className="mb-1 flex flex-wrap justify-between items-center">
@@ -1089,7 +1089,7 @@ export default function ScheduleJobs() {
          ) : (
             <>
                {renderCalendar()}
-               <div className="md:mt-10 mt-5 bg-green-200 md:p-10 p-2 border border-rounded rounded-lg border-solid border-green-400">
+               <div className="md:mt-10 mt-5 md:p-10 p-2 border border-rounded border-solid border-green-400">
                   <h1 className="md:text-4xl text-green-700 font-bold text-center mb-4">Summary of Scheduled Jobs</h1>
                   <Select
                      value={sortOption}
