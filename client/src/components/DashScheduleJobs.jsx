@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, Select, Textarea, TextInput, Spinner } from 'flowbite-react';
 import { DateTime } from 'luxon';
+import { WiThermometer, WiRain, WiSnow, WiStrongWind, WiHumidity } from 'react-icons/wi';
 
 
 export default function ScheduleJobs() {
@@ -11,7 +12,7 @@ export default function ScheduleJobs() {
    const [taskNote, setTaskNote] = useState('');
    const [tasks, setTasks] = useState([]);
    const [notes, setNotes] = useState('');
-
+   const [weatherData, setWeatherData] = useState({});
    const [modalOpen, setModalOpen] = useState(false);
    const [loading, setLoading] = useState(false);
    const [currentStartDate, setCurrentStartDate] = useState(new Date());
@@ -21,7 +22,8 @@ export default function ScheduleJobs() {
    const [cityFilter, setCityFilter] = useState('');
    const [showDeleteModal, setShowDeleteModal] = useState(false);
    const [jobToDelete, setJobToDelete] = useState(null);
-
+   const [weatherModalOpen, setWeatherModalOpen] = useState(false);
+   const [weatherModalData, setWeatherModalData] = useState({ date: '', city: '' });
 
    useEffect(() => {
       fetchJobs();
@@ -34,6 +36,19 @@ export default function ScheduleJobs() {
          const data = await response.json();
          console.log('Fetched jobs data:', data);
          setJobs(data.jobs);
+
+         const today = new Date();
+         const nextSixDays = Array.from({ length: 5 }, (_, i) => {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            return date.toISOString().split('T')[0];
+         });
+
+         nextSixDays.forEach(date => {
+            const job = data.jobs.find(job => job.schedule.some(entry => entry.date === date));
+            const city = job ? job.customerInfo.city : 'Brampton';
+            fetchWeatherData(city);
+         });
       } catch (error) {
          console.error('Error fetching jobs:', error);
       } finally {
@@ -42,9 +57,10 @@ export default function ScheduleJobs() {
    };
 
 
-
-
-
+   const handleShowWeatherClick = (date, city) => {
+      setWeatherModalData({ date, city });
+      setWeatherModalOpen(true);
+   };
 
    const handleDateClick = (date) => {
       setSelectedDate(date);
@@ -61,10 +77,47 @@ export default function ScheduleJobs() {
          setSelectedTime(scheduleEntry.time);
          setTasks(scheduleEntry.tasks || []);
          setNotes(scheduleEntry.notes || []);
+         fetchWeatherData(jobScheduled.customerInfo.city); // Fetch weather data for the job's city
       } else {
          setSelectedJob(null);
+         fetchWeatherData('Brampton'); // Default to Brampton if no job is scheduled
       }
    };
+
+
+   const fetchWeatherData = async (city) => {
+      const apiKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY;
+      if (!apiKey) {
+         console.error('API key is missing');
+         return;
+      }
+      try {
+         const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city},CA&appid=${apiKey}&units=metric`);
+         const data = await response.json();
+         console.log(`Fetched weather data for ${city}:`, data);
+
+         const groupedData = data.list.reduce((acc, entry) => {
+            const date = entry.dt_txt.split(' ')[0];
+            if (!acc[date]) acc[date] = [];
+            acc[date].push({
+               time: entry.dt_txt,
+               temp: entry.main.temp,
+               description: entry.weather[0].description,
+               rain: entry.rain ? entry.rain['3h'] : 0,
+               snow: entry.snow ? entry.snow['3h'] : 0,
+            });
+            return acc;
+         }, {});
+
+         setWeatherData(prevData => ({
+            ...prevData,
+            ...groupedData
+         }));
+      } catch (error) {
+         console.error('Error fetching weather data:', error);
+      }
+   };
+
 
 
 
@@ -138,6 +191,40 @@ export default function ScheduleJobs() {
          console.error('Error saving schedule:', error);
       }
    };
+
+   const renderWeather = (date, time, city) => {
+      if (!weatherData[date]) return <p>No weather data available.</p>;
+
+      const timeMap = {
+         morning: [6, 9, 12],
+         noon: [12, 15],
+         evening: [18, 21],
+         'whole day': [6, 9, 12, 15, 18, 21]
+      };
+
+      const weatherForTime = weatherData[date].filter(entry => {
+         const entryHour = new Date(entry.time).getHours();
+         return timeMap[time] ? timeMap[time].includes(entryHour) : false;
+      });
+
+      if (weatherForTime.length === 0) return <p>No weather data available.</p>;
+
+      return (
+         <div className="weather-info mt-2 bg-gray-100 p-2 rounded-lg">
+            <h4 className="font-bold">{city}</h4>
+            {weatherForTime.map((weather, index) => (
+               <div key={index} className="mt-2">
+                  <p><strong>Time:</strong> {new Date(weather.time).toLocaleTimeString()}</p>
+                  <p><strong>Temperature:</strong> {weather.temp} °C</p>
+                  <p><strong>Weather:</strong> {weather.description}</p>
+                  <p><strong>Rain:</strong> {weather.rain > 0 ? `${weather.rain} mm` : 'No rain'}</p>
+                  <p><strong>Snow:</strong> {weather.snow > 0 ? `${weather.snow} mm` : 'No snow'}</p>
+               </div>
+            ))}
+         </div>
+      );
+   };
+
 
 
 
@@ -324,13 +411,96 @@ export default function ScheduleJobs() {
       setCurrentStartDate(newStartDate);
    };
 
+   const renderWeatherModal = () => {
+      const { date, city } = weatherModalData;
+      const weatherForDate = weatherData[date] || [];
+
+      return (
+         <Modal show={weatherModalOpen} onClose={() => setWeatherModalOpen(false)} size="lg">
+            <Modal.Header>Weather Details for {city} on {date}</Modal.Header>
+            <Modal.Body>
+               <div className="space-y-4">
+                  {weatherForDate.length > 0 ? (
+                     weatherForDate.map((weather, index) => (
+                        <div key={index} className="weather-detail p-2 border rounded-lg bg-gray-50">
+                           <p><strong>Time:</strong> {new Date(weather.time).toLocaleTimeString()}</p>
+                           <p><strong>Temperature:</strong> {weather.temp} °C</p>
+                           <p><strong>Weather:</strong> {weather.description}</p>
+                           <p><strong>Rain:</strong> {weather.rain > 0 ? `${weather.rain} mm` : 'No rain'}</p>
+                           <p><strong>Snow:</strong> {weather.snow > 0 ? `${weather.snow} mm` : 'No snow'}</p>
+                        </div>
+                     ))
+                  ) : (
+                     <p>No weather data available.</p>
+                  )}
+               </div>
+            </Modal.Body>
+            <Modal.Footer>
+               <Button onClick={() => setWeatherModalOpen(false)} gradientMonochrome="info" size="sm">
+                  Close
+               </Button>
+            </Modal.Footer>
+         </Modal>
+      );
+   };
+
+   const renderBriefWeather = (date, city) => {
+      if (!weatherData[date]) return null;
+  
+      const specificTimes = ['09:00:00', '12:00:00', '15:00:00', '18:00:00', '21:00:00'];
+      const briefWeather = weatherData[date].reduce((acc, entry) => {
+          const time = entry.time.split(' ')[1];
+          if (specificTimes.includes(time)) {
+              acc.rainTimes[time] = entry.rain;
+          }
+          acc.tempSum += entry.temp;
+          acc.windSum += entry.wind ? entry.wind.speed : 0;
+          acc.rainSum += entry.rain;
+          acc.count += 1;
+          return acc;
+      }, { tempSum: 0, rainSum: 0, windSum: 0, rainTimes: {}, count: 0 });
+  
+      const avgTemp = (briefWeather.tempSum / briefWeather.count).toFixed(1);
+      const avgRain = (briefWeather.rainSum / briefWeather.count).toFixed(1);
+      const avgWind = (briefWeather.windSum / briefWeather.count).toFixed(1);
+  
+      return (
+          <div className="flex flex-wrap items-center space-x-2 mt-2 text-sm">
+              <div className="flex items-center text-yellow-600">
+                  <WiThermometer size={18} className="text-yellow-500" />
+                  <span className="ml-1">{avgTemp} °C</span>
+              </div>
+              <div className="flex items-center text-yellow-600">
+                  <WiRain size={18} className="text-yellow-500" />
+                  <span className={`ml-1 ${avgRain >= 0.1 ? 'text-red-500' : 'text-yellow-500'}`}>{avgRain} mm</span>
+              </div>
+              <div className="flex items-center text-yellow-600">
+                  <WiStrongWind size={18} className="text-yellow-500" />
+                  <span className="ml-1">{avgWind} m/s</span>s
+              </div>
+              <div className=" pl-5 flex flex-wrap items-center space-x-2 mt-2 sm:mt-0">
+                  {Object.entries(briefWeather.rainTimes).map(([time, rain], index) => (
+                      <div key={index} className="flex items-center">
+                          <WiRain size={18} className="text-blue-500" />
+                          <span className={`ml-1 ${rain >= 0.1 ? 'text-red-500' : 'text-blue-500'}`}>{time.split(':')[0]}:00 - {rain} mm</span>
+                      </div>
+                  ))}
+              </div>
+          </div>
+      );
+  };
+  
+
+
+
    const renderCalendar = () => {
       const days = [];
-      // Find the start of the current week (Monday)
       const startOfWeek = new Date(currentStartDate);
       startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() === 0 ? 6 : startOfWeek.getDay() - 1));
+      const today = new Date();
+      const sixDaysLater = new Date(today);
+      sixDaysLater.setDate(today.getDate() + 5); // Including today, it's 6 days
 
-      // Generate the 7 days of the week from Monday to Sunday
       for (let i = 0; i < 7; i++) {
          const date = new Date(startOfWeek);
          date.setDate(startOfWeek.getDate() + i);
@@ -344,14 +514,14 @@ export default function ScheduleJobs() {
          const currentWeekEnd = new Date(currentWeekStart);
          currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
 
-         if (dateWithoutTime === today) return 'bg-green-500 text-gray-800 italic border border-dotted border-2 border-gray-800 rounded-xl'; // Today's date
-         if (dateWithoutTime < today) return 'bg-gray-400 text-slate-700'; // Past days
-         if (date.getDay() === 0) return 'bg-red-100'; // Sundays
-         if (date.getDay() === 6) return 'bg-green-100'; // Saturdays
-         if (date >= currentWeekStart && date <= currentWeekEnd) return 'bg-green-200'; // Current week
-         if (date > currentWeekEnd) return 'bg-gray-200'; // All other days
+         if (dateWithoutTime === today) return 'bg-green-500 text-gray-800 italic border border-dotted border-2 border-gray-800 rounded-xl';
+         if (dateWithoutTime < today) return 'bg-gray-400 text-slate-700';
+         if (date.getDay() === 0) return 'bg-red-100';
+         if (date.getDay() === 6) return 'bg-green-100';
+         if (date >= currentWeekStart && date <= currentWeekEnd) return 'bg-green-200';
+         if (date > currentWeekEnd) return 'bg-gray-200';
 
-         return 'bg-green-200'; // Default color for any other days not covered by the above conditions
+         return 'bg-green-200';
       };
 
       return (
@@ -362,21 +532,43 @@ export default function ScheduleJobs() {
                <Button onClick={() => handleDayChange(7)}>Next</Button>
             </div>
             <div className="calendar-grid grid grid-cols-1 gap-2 border border-solid border-gray-700 md:p-10 p-5">
-               {days.map((day, index) => (
-                  <div
-                     key={index}
-                     className={`calendar-day border p-3 cursor-pointer ${dayColors(day)}`}
-                     onClick={() => handleDateClick(day.toISOString().split('T')[0])}
-                  >
-                     <div className="font-bold">{day.toLocaleDateString('default', { weekday: 'long' })}</div>
-                     <div>{day.toLocaleDateString('default', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                     {renderJobsForDay(day.toISOString().split('T')[0])}
-                  </div>
-               ))}
+               {days.map((day, index) => {
+                  const dayString = day.toISOString().split('T')[0];
+                  const job = jobs.find(job => job.schedule.some(entry => entry.date === dayString));
+                  const city = job ? job.customerInfo.city : 'Brampton';
+                  const isWithinNextSixDays = (day >= today && day <= sixDaysLater);
+
+                  return (
+                     <div
+                        key={index}
+                        className={`calendar-day border p-3 cursor-pointer ${dayColors(day)}`}
+                        onClick={() => handleDateClick(dayString)}
+                     >
+                        <div className="font-bold">
+                           <span className='text-gray-950 font-extrabold'>{day.toLocaleDateString('default', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                           <span className='pr-2'></span>
+                           {day.toLocaleDateString('default', { weekday: 'long' })}
+                           {renderBriefWeather(dayString, city)}
+
+                        </div>
+                        {renderJobsForDay(dayString)}
+                        {/* {isWithinNextSixDays && (
+                           <div>
+                              <Button gradientDuoTone="greenToBlue   " pill onClick={() => handleShowWeatherClick(dayString, city)} className="mt-2">
+                                 Show Weather
+                              </Button>
+                           </div>
+                        )} */}
+                     </div>
+                  );
+               })}
             </div>
+            {renderWeatherModal()}
          </div>
       );
    };
+
+
 
    const renderJobsForDay = (date) => {
       const timeSlots = ['morning', 'noon', 'evening', 'whole day'];
@@ -391,7 +583,6 @@ export default function ScheduleJobs() {
          const jobEntries = jobs.filter(job => {
             const entry = job.schedule?.find(entry => entry.date === date && entry.time === time);
             if (entry && entry.tasks.length === 0 && entry.notes.length === 0 && (!entry.checklists || entry.checklists.length === 0)) {
-               // Automatically delete empty schedules
                deleteEmptySchedule(job._id, date, time);
                return false;
             }
@@ -406,7 +597,8 @@ export default function ScheduleJobs() {
                   const entry = job.schedule.find(entry => entry.date === date && entry.time === time);
                   return (
                      <div key={index} className="text-sm">
-                        {job.customerInfo.name} (Tasks: {entry.tasks.length}, Notes: {entry.notes.length})
+                        {job.customerInfo.name} ({job.customerInfo.city}) (Tasks: {entry.tasks.length}, Notes: {entry.notes.length})
+
                      </div>
                   );
                })}
@@ -414,6 +606,10 @@ export default function ScheduleJobs() {
          );
       });
    };
+
+
+
+
 
    const deleteEmptySchedule = async (jobId, date, time) => {
       const job = jobs.find(j => j._id === jobId);
