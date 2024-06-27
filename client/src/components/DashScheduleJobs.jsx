@@ -851,7 +851,7 @@ export default function ScheduleJobs() {
       const sortedDates = Object.keys(groupedSchedule).sort((a, b) => new Date(a) - new Date(b));
 
       return (
-         <div className="mt-4 md:p-5 p-2 bg-blue-50 border-solid border-green-600 shadow-md rounded-lg border">
+         <div className="mt-4 md:p-5 p-2 md:mb-10 mb-4 bg-blue-50 border-solid shadow-[inset_0px_0px_17px_1px_#48bb78]  rounded-lg border-2 ">
             <h3 className="text-2xl text-red-800 font-bold mb-2">{job.customerInfo.name} ({job.status})</h3>
             <div className="mb-2">
                <strong>Address:</strong> {job.customerInfo.address}, {job.customerInfo.city}
@@ -866,7 +866,7 @@ export default function ScheduleJobs() {
                <strong>Scheduled Dates:</strong> {sortedDates.map(date => formatDate(date)).join(', ')}
             </div>
             {sortedDates.map(date => (
-               <div key={date} className="mt-4 bg-blue-100 md:p-2 p-1 md:py-4 py-1 shadow-md rounded-lg border">
+               <div key={date} className="mt-4 bg-blue-100 md:p-2 p-1 md:py-4 py-1 shadow-lg rounded-lg border">
                   <h4 className="text-xl text-green-700 font-semibold md:mb-2 mb-0">{formatDate(date)}</h4>
                   {groupedSchedule[date]
                      .sort((a, b) => timeOrder.indexOf(a.time) - timeOrder.indexOf(b.time))
