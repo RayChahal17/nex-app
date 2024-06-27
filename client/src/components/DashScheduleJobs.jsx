@@ -24,6 +24,8 @@ export default function ScheduleJobs() {
    const [jobToDelete, setJobToDelete] = useState(null);
    const [weatherModalOpen, setWeatherModalOpen] = useState(false);
    const [weatherModalData, setWeatherModalData] = useState({ date: '', city: '' });
+   const [unassignedJobs, setUnassignedJobs] = useState([]);
+
 
    useEffect(() => {
       fetchJobs();
@@ -36,6 +38,15 @@ export default function ScheduleJobs() {
          const data = await response.json();
          console.log('Fetched jobs data:', data);
          setJobs(data.jobs);
+
+         // Compute unassignedJobs after jobs are fetched
+         const filteredUnassignedJobs = data.jobs.filter(job => {
+            const isUnassigned = job.schedule.length === 0;
+            const isNotCompleted = job.status !== 'Job Completed';
+            return isUnassigned && isNotCompleted;
+         });
+
+         setUnassignedJobs(filteredUnassignedJobs);
 
          const today = new Date();
          const nextSixDays = Array.from({ length: 5 }, (_, i) => {
@@ -855,7 +866,7 @@ export default function ScheduleJobs() {
                <strong>Scheduled Dates:</strong> {sortedDates.map(date => formatDate(date)).join(', ')}
             </div>
             {sortedDates.map(date => (
-               <div key={date} className="mt-4 bg-blue-100 md:p-5 p-2 md:py-10 py-2 shadow-md rounded-lg border">
+               <div key={date} className="mt-4 bg-blue-100 md:p-2 p-1 md:py-4 py-1 shadow-md rounded-lg border">
                   <h4 className="text-xl text-green-700 font-semibold md:mb-2 mb-0">{formatDate(date)}</h4>
                   {groupedSchedule[date]
                      .sort((a, b) => timeOrder.indexOf(a.time) - timeOrder.indexOf(b.time))
@@ -874,7 +885,7 @@ export default function ScheduleJobs() {
                                  </div>
                               )}
                               {entry.tasks.length > 0 && (
-                                 <div className="w-full md:w-1/2 pl-4 md:border-l border-gray-300">
+                                 <div className="w-full md:w-1/2 pl-4 md:border-l  border-gray-300">
                                     <strong className="block mb-2 text-gray-400">Tasks ({formatDate(entry.date)}):</strong>
                                     <ul>
                                        {entry.tasks.map((task, taskIndex) => (
@@ -945,7 +956,7 @@ export default function ScheduleJobs() {
       })
       .filter(job => filterJobs(job) && (cityFilter === '' || job.customerInfo.city.toLowerCase().includes(cityFilter.toLowerCase())));
 
-   const unassignedJobs = jobs.filter(job => job.schedule.length === 0 && job.status !== 'Job Completed');
+   // const unassignedJobs = jobs.filter(job => job.schedule.length === 0 && job.status !== 'Job Completed');
 
    const oldOrCompletedJobs = jobs.filter(job => {
       const lastScheduledDate = job.schedule.reduce((latest, entry) => {
@@ -983,6 +994,7 @@ export default function ScheduleJobs() {
          </div>
       );
    };
+   
 
    const confirmDeleteJob = (jobId) => {
       setJobToDelete(jobId);
