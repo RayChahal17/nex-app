@@ -13,6 +13,7 @@ export default function DashCostCalculator() {
    const [meshCount, setMeshCount] = useState(0);
    const [concreteLoad, setConcreteLoad] = useState(0);
    const [concreteCost, setConcreteCost] = useState(0);
+   const [tip, setTip] = useState(25); // Default tip
    const [generalLaborDays, setGeneralLaborDays] = useState(0);
    const [generalLaborWorkers, setGeneralLaborWorkers] = useState(0);
    const [generalLaborCost, setGeneralLaborCost] = useState(110);
@@ -57,9 +58,20 @@ export default function DashCostCalculator() {
       const numberOfCubicMeters = area / adjustedCoverage;
       const roundedVolume = Math.ceil(numberOfCubicMeters * 10) / 10;
 
-      const baseCost = 245;
-      const extraCost = roundedVolume > 1 ? (roundedVolume - 1) * 500 : 0;
-      const totalConcreteCost = roundedVolume * baseCost + extraCost;
+      const baseCost = 210;
+      const minOrderCost = 500;
+      const extraCostFor2Meters = 800;
+      const extraCostFor1Meter = 500;
+
+      let totalConcreteCost;
+
+      if (roundedVolume <= 1) {
+         totalConcreteCost = minOrderCost + tip;
+      } else if (roundedVolume <= 2) {
+         totalConcreteCost = minOrderCost + extraCostFor1Meter + tip;
+      } else {
+         totalConcreteCost = minOrderCost + extraCostFor2Meters + (roundedVolume - 2) * baseCost + tip;
+      }
 
       setConcreteLoad(roundedVolume);
       setConcreteCost(totalConcreteCost);
@@ -182,7 +194,7 @@ export default function DashCostCalculator() {
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
         <h4 class="text-lg font-semibold mb-2">Formulas & Notes:</h4>
         <p>Minimum Order = 1 cubic meter</p>
-        <p>Cost per cubic meter = $210 + $25 tip = $245</p>
+        <p>Cost per cubic meter = $210 + Tip = $<input type="number" value="${tip}" class="text-black" /></p>
         <p>Extra Cost for 2 Extra Meters = $800</p>
         <p>Extra Cost for 1 Extra Meter = $500</p>
         <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
@@ -386,19 +398,37 @@ export default function DashCostCalculator() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
                         <Label htmlFor="concreteLoad">Concrete Load (cubic meters)</Label>
-                        <TextInput id="concreteLoad" type="number" value={concreteLoad.toFixed(2)} readOnly />
+                        <TextInput id="concreteLoad" type="number" value={concreteLoad.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                      <div>
                         <Label htmlFor="concreteCost">Concrete Cost ($)</Label>
-                        <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly />
+                        <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                   </div>
-                  <div className="mt-4">
-                     <p>Minimum Order = 1 cubic meter</p>
-                     <p>Cost per cubic meter = $210 + $25 tip = $245</p>
-                     <p>Extra Cost for 2 Extra Meters = $800</p>
-                     <p>Extra Cost for 1 Extra Meter = $500</p>
-                     <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                        <Label htmlFor="minimumOrder">Minimum Order (cubic meter)</Label>
+                        <TextInput id="minimumOrder" type="number" value="1" readOnly className="text-blue-500" />
+                     </div>
+                     <div>
+                        <Label htmlFor="costPerCubicMeter">Cost per cubic meter ($)</Label>
+                        <TextInput id="costPerCubicMeter" type="number" value="210" readOnly className="text-blue-500" />
+                     </div>
+                     <div>
+                        <Label htmlFor="tip">Tip ($)</Label>
+                        <TextInput id="tip" type="number" value={tip} onChange={(e) => setTip(parseFloat(e.target.value))} className="text-black" />
+                     </div>
+                     <div>
+                        <Label htmlFor="extraCostFor2Meters">Extra Cost for 2 Extra Meters ($)</Label>
+                        <TextInput id="extraCostFor2Meters" type="number" value="800" readOnly className="text-blue-500" />
+                     </div>
+                     <div>
+                        <Label htmlFor="extraCostFor1Meter">Extra Cost for 1 Extra Meter ($)</Label>
+                        <TextInput id="extraCostFor1Meter" type="number" value="500" readOnly className="text-blue-500" />
+                     </div>
+                     <div>
+                        <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
+                     </div>
                   </div>
                </div>
 
@@ -425,11 +455,11 @@ export default function DashCostCalculator() {
                      </div>
                      <div>
                         <Label htmlFor="binCount">Number of Bins</Label>
-                        <TextInput id="binCount" type="number" value={calculateBins()} readOnly />
+                        <TextInput id="binCount" type="number" value={calculateBins()} readOnly className="text-blue-500" />
                      </div>
                      <div>
                         <Label htmlFor="binCost">Bin Cost ($)</Label>
-                        <TextInput id="binCost" type="number" value={calculateBins() * (binType === '5-yard' ? 400 : binType === '10-yard' ? 450 : 550)} readOnly />
+                        <TextInput id="binCost" type="number" value={calculateBins() * (binType === '5-yard' ? 400 : binType === '10-yard' ? 450 : 550)} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
@@ -448,11 +478,11 @@ export default function DashCostCalculator() {
                      </div>
                      <div>
                         <Label htmlFor="meshCount">Wire Mesh Count</Label>
-                        <TextInput id="meshCount" type="number" value={meshCount} readOnly />
+                        <TextInput id="meshCount" type="number" value={meshCount} readOnly className="text-blue-500" />
                      </div>
                      <div>
                         <Label htmlFor="rodCount">Rod Count</Label>
-                        <TextInput id="rodCount" type="number" value={rodCount} readOnly />
+                        <TextInput id="rodCount" type="number" value={rodCount} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
@@ -507,7 +537,7 @@ export default function DashCostCalculator() {
                      </div>
                      <div>
                         <Label htmlFor="gravelYards">Gravel Yards</Label>
-                        <TextInput id="gravelYards" type="number" value={gravelYards.toFixed(2)} readOnly />
+                        <TextInput id="gravelYards" type="number" value={gravelYards.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
