@@ -342,8 +342,8 @@ export default function DashCostCalculator() {
    };
 
    return (
-      <div className="container mx-auto p-6 bg-gray-100">
-         <Card className="shadow-lg p-6 rounded-lg">
+      <div className="container mx-auto md:p-6 p-1 bg-gray-100">
+         <Card className="shadow-lg md:p-6 p-1 rounded-lg">
             <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">Concrete Cost Estimation</h2>
             <div className="space-y-8">
                <div>

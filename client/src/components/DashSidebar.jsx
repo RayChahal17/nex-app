@@ -68,6 +68,13 @@ export default function DashSidebar() {
                   </Link>
                )}
                {currentUser && currentUser.isAdmin && (
+                  <Link to="/dashboard?tab=cost-calculator">
+                     <Sidebar.Item active={tab === 'cost-calculator'} icon={HiClipboardList}>
+                        Cost Calculator
+                     </Sidebar.Item>
+                  </Link>
+               )}
+               {currentUser && currentUser.isAdmin && (
                   <Link to="/dashboard?tab=show-calc-estimates">
                      <Sidebar.Item active={tab === 'show-calc-estimates'} icon={HiClipboardList}>
                         Show Estimates
@@ -88,6 +95,7 @@ export default function DashSidebar() {
                      </Sidebar.Item>
                   </Link>
                )}
+               
                
                <Sidebar.Item onClick={handleSignOut} icon={HiLogout} className="cursor-pointer">
                   Sign Out
