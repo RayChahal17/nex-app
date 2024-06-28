@@ -26,6 +26,7 @@ export default function DashCostCalculator() {
    const [extraCosts, setExtraCosts] = useState([]);
    const [totalCost, setTotalCost] = useState(0);
    const [details, setDetails] = useState('');
+   const [wireMeshArea, setWireMeshArea] = useState(0);
 
    useEffect(() => {
       if (area > 0) {
@@ -35,20 +36,17 @@ export default function DashCostCalculator() {
          calculateBins();
          calculateTotalCost();
       }
-   }, [area, slabThickness, reinforcementType, gravelType, depth, digArea, generalLaborDays, generalLaborWorkers, supervisoryLaborDays, supervisoryLaborWorkers, extraCosts]);
+   }, [area, slabThickness, reinforcementType, gravelType, depth, digArea, generalLaborDays, generalLaborWorkers, supervisoryLaborDays, supervisoryLaborWorkers, extraCosts, wireMeshArea]);
 
    const calculateReinforcement = () => {
-      if (reinforcementType === 'mesh') {
-         const meshCoverage = 32;
-         const requiredMesh = Math.ceil(area / meshCoverage);
-         setMeshCount(requiredMesh);
-         setRodCount(0);
-      } else {
-         const rodsPerSqFt = 1 / 10;
-         const requiredRods = Math.ceil(area * rodsPerSqFt);
-         setRodCount(requiredRods);
-         setMeshCount(0);
-      }
+      const remainingArea = area - wireMeshArea;
+      const meshCoverage = 32;
+      const requiredMesh = Math.ceil(wireMeshArea / meshCoverage);
+      const rodsPerSqFt = 1 / 10;
+      const requiredRods = Math.ceil(remainingArea * rodsPerSqFt);
+
+      setMeshCount(requiredMesh);
+      setRodCount(requiredRods);
    };
 
    const calculateConcreteLoad = () => {
@@ -194,7 +192,7 @@ export default function DashCostCalculator() {
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
         <h4 class="text-lg font-semibold mb-2">Formulas & Notes:</h4>
         <p>Minimum Order = 1 cubic meter</p>
-        <p>Cost per cubic meter = $210 + Tip = $<input type="number" value="${tip}" class="text-black" /></p>
+        <p>Cost per cubic meter = $210 + Tip = $<input type="number" value="${tip}" onChange="(e) => setTip(parseFloat(e.target.value))" class="text-black" /></p>
         <p>Extra Cost for 2 Extra Meters = $800</p>
         <p>Extra Cost for 1 Extra Meter = $500</p>
         <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
@@ -259,9 +257,9 @@ export default function DashCostCalculator() {
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
         <h4 class="text-lg font-semibold mb-2">Formulas:</h4>
         <p>Wire Mesh Coverage = 32 sq ft per piece</p>
-        <p>Required Wire Mesh = Total Area (sq ft) / 32</p>
+        <p>Required Wire Mesh = Wire Mesh Area (sq ft) / 32</p>
         <p>Rods Coverage = 1 rod per 10 sq ft</p>
-        <p>Required Rods = Total Area (sq ft) / 10</p>
+        <p>Required Rods = Remaining Area (sq ft) / 10</p>
       </div>
       <h3 class="text-xl font-semibold mb-4 text-gray-600">Labor Details</h3>
       <table class="table-auto w-full mb-4">
@@ -405,30 +403,12 @@ export default function DashCostCalculator() {
                         <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                   </div>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div>
-                        <Label htmlFor="minimumOrder">Minimum Order (cubic meter)</Label>
-                        <TextInput id="minimumOrder" type="number" value="1" readOnly className="text-blue-500" />
-                     </div>
-                     <div>
-                        <Label htmlFor="costPerCubicMeter">Cost per cubic meter ($)</Label>
-                        <TextInput id="costPerCubicMeter" type="number" value="210" readOnly className="text-blue-500" />
-                     </div>
-                     <div>
-                        <Label htmlFor="tip">Tip ($)</Label>
-                        <TextInput id="tip" type="number" value={tip} onChange={(e) => setTip(parseFloat(e.target.value))} className="text-black" />
-                     </div>
-                     <div>
-                        <Label htmlFor="extraCostFor2Meters">Extra Cost for 2 Extra Meters ($)</Label>
-                        <TextInput id="extraCostFor2Meters" type="number" value="800" readOnly className="text-blue-500" />
-                     </div>
-                     <div>
-                        <Label htmlFor="extraCostFor1Meter">Extra Cost for 1 Extra Meter ($)</Label>
-                        <TextInput id="extraCostFor1Meter" type="number" value="500" readOnly className="text-blue-500" />
-                     </div>
-                     <div>
-                        <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
-                     </div>
+                  <div className="mt-4">
+                     <p>Minimum Order = 1 cubic meter</p>
+                     <p>Cost per cubic meter = $210 + Tip = $<TextInput id="tip" type="number" value={tip} onChange={(e) => setTip(parseFloat(e.target.value))} className="text-black" /></p>
+                     <p>Extra Cost for 2 Extra Meters = $800</p>
+                     <p>Extra Cost for 1 Extra Meter = $500</p>
+                     <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
                   </div>
                </div>
 
@@ -469,6 +449,10 @@ export default function DashCostCalculator() {
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Reinforcement Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                        <Label htmlFor="wireMeshArea">Wire Mesh Area (sq ft)</Label>
+                        <TextInput id="wireMeshArea" type="number" value={wireMeshArea} onChange={(e) => setWireMeshArea(parseInt(e.target.value))} />
+                     </div>
                      <div>
                         <Label htmlFor="reinforcementType">Reinforcement Type</Label>
                         <Select id="reinforcementType" value={reinforcementType} onChange={(e) => setReinforcementType(e.target.value)}>
