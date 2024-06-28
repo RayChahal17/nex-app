@@ -9,6 +9,7 @@ export default function DashCostCalculator() {
    const [slabThickness, setSlabThickness] = useState(4);
    const [binType, setBinType] = useState('5-yard');
    const [reinforcementType, setReinforcementType] = useState('mesh');
+   const [wireMeshArea, setWireMeshArea] = useState(0); // This will be set to area initially
    const [rodCount, setRodCount] = useState(0);
    const [meshCount, setMeshCount] = useState(0);
    const [concreteLoad, setConcreteLoad] = useState(0);
@@ -26,29 +27,37 @@ export default function DashCostCalculator() {
    const [extraCosts, setExtraCosts] = useState([]);
    const [totalCost, setTotalCost] = useState(0);
    const [details, setDetails] = useState('');
-   const [wireMeshArea, setWireMeshArea] = useState(0);
 
    useEffect(() => {
       if (area > 0) {
-         calculateReinforcement();
-         calculateConcreteLoad();
-         calculateGravelYards();
-         calculateBins();
-         calculateTotalCost();
+          setWireMeshArea(area); // Set wireMeshArea to the total area initially
+          setDigArea(area); // Set digArea to the total area initially
+          calculateReinforcement();
+          calculateConcreteLoad();
+          calculateGravelYards();
+          calculateBins();
+          calculateTotalCost();
       }
-   }, [area, slabThickness, reinforcementType, gravelType, depth, digArea, generalLaborDays, generalLaborWorkers, supervisoryLaborDays, supervisoryLaborWorkers, extraCosts, wireMeshArea]);
+  }, [area, slabThickness, wireMeshArea, gravelType, depth, digArea, generalLaborDays, generalLaborWorkers, supervisoryLaborDays, supervisoryLaborWorkers, extraCosts]);
+  
 
    const calculateReinforcement = () => {
       const remainingArea = area - wireMeshArea;
-      const meshCoverage = 32;
-      const requiredMesh = Math.ceil(wireMeshArea / meshCoverage);
-      const rodsPerSqFt = 1 / 10;
-      const requiredRods = Math.ceil(remainingArea * rodsPerSqFt);
-
-      setMeshCount(requiredMesh);
-      setRodCount(requiredRods);
+      if (wireMeshArea > 0) {
+         const meshCoverage = 32;
+         const requiredMesh = Math.ceil(wireMeshArea / meshCoverage);
+         setMeshCount(requiredMesh);
+      } else {
+         setMeshCount(0);
+      }
+      if (remainingArea > 0) {
+         const rodsPerSqFt = 1 / 10;
+         const requiredRods = Math.ceil(remainingArea * rodsPerSqFt);
+         setRodCount(requiredRods);
+      } else {
+         setRodCount(0);
+      }
    };
-
    const calculateConcreteLoad = () => {
       const coveragePerCubicMeter = 80; // 1 cubic meter covers 80 sq ft at 4 inches
       const slabThicknessFactor = slabThickness / 4;
@@ -57,18 +66,17 @@ export default function DashCostCalculator() {
       const roundedVolume = Math.ceil(numberOfCubicMeters * 10) / 10;
 
       const baseCost = 210;
-      const minOrderCost = 500;
-      const extraCostFor2Meters = 800;
-      const extraCostFor1Meter = 500;
+      const minOrderCost1 = 500;
+      const minOrderCost2 = 800;
 
       let totalConcreteCost;
 
       if (roundedVolume <= 1) {
-         totalConcreteCost = minOrderCost + tip;
-      } else if (roundedVolume <= 2) {
-         totalConcreteCost = minOrderCost + extraCostFor1Meter + tip;
+         totalConcreteCost = minOrderCost1;
+      } else if (roundedVolume <= 2.5) {
+         totalConcreteCost = minOrderCost2;
       } else {
-         totalConcreteCost = minOrderCost + extraCostFor2Meters + (roundedVolume - 2) * baseCost + tip;
+         totalConcreteCost = roundedVolume * baseCost + tip;
       }
 
       setConcreteLoad(roundedVolume);
@@ -130,7 +138,7 @@ export default function DashCostCalculator() {
 
       switch (binType) {
          case '5-yard':
-            binCost = 400 * numberOfBins;
+            binCost = 500 * numberOfBins;
             break;
          case '10-yard':
             binCost = 450 * numberOfBins;
@@ -139,7 +147,7 @@ export default function DashCostCalculator() {
             binCost = 550 * numberOfBins;
             break;
          default:
-            binCost = 400 * numberOfBins;
+            binCost = 500 * numberOfBins;
       }
 
       const rodCost = rodCount * 3;
@@ -150,7 +158,7 @@ export default function DashCostCalculator() {
 
       const extraCostTotal = extraCosts.reduce((total, cost) => total + parseFloat(cost.cost || 0), 0);
 
-      const gravelTotalCost = gravelYards * gravelCost;
+      const gravelTotalCost = gravelYards * gravelCost + 80; // Adding $80 charge for bringing gravel
       const total = binCost + rodCost + meshCost + concreteCost + totalGeneralLaborCost + totalSupervisoryLaborCost + gravelTotalCost + extraCostTotal;
       setTotalCost(total);
       generateDetails(binCost, rodCost, meshCost, concreteCost, totalGeneralLaborCost, totalSupervisoryLaborCost, gravelTotalCost, extraCostTotal, numberOfBins);
@@ -192,7 +200,7 @@ export default function DashCostCalculator() {
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
         <h4 class="text-lg font-semibold mb-2">Formulas & Notes:</h4>
         <p>Minimum Order = 1 cubic meter</p>
-        <p>Cost per cubic meter = $210 + Tip = $<input type="number" value="${tip}" onChange="(e) => setTip(parseFloat(e.target.value))" class="text-black" /></p>
+        <p>Cost per cubic meter = $210 + Tip = $${tip}</p>
         <p>Extra Cost for 2 Extra Meters = $800</p>
         <p>Extra Cost for 1 Extra Meter = $500</p>
         <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
@@ -241,6 +249,10 @@ export default function DashCostCalculator() {
             <td class="border px-4 py-2">${reinforcementType}</td>
           </tr>
           <tr>
+            <td class="border px-4 py-2">Wire Mesh Area</td>
+            <td class="border px-4 py-2">${wireMeshArea} sq ft</td>
+          </tr>
+          <tr>
             <td class="border px-4 py-2">Wire Mesh Count</td>
             <td class="border px-4 py-2">${meshCount}</td>
           </tr>
@@ -250,16 +262,16 @@ export default function DashCostCalculator() {
           </tr>
           <tr>
             <td class="border px-4 py-2">Reinforcement Cost</td>
-            <td class="border px-4 py-2">$${reinforcementType === 'mesh' ? meshCount * 6 : rodCount * 3}</td>
+            <td class="border px-4 py-2">$${meshCount * 6 + rodCount * 3}</td>
           </tr>
         </tbody>
       </table>
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
         <h4 class="text-lg font-semibold mb-2">Formulas:</h4>
         <p>Wire Mesh Coverage = 32 sq ft per piece</p>
-        <p>Required Wire Mesh = Wire Mesh Area (sq ft) / 32</p>
+        <p>Required Wire Mesh = Total Area (sq ft) / 32</p>
         <p>Rods Coverage = 1 rod per 10 sq ft</p>
-        <p>Required Rods = Remaining Area (sq ft) / 10</p>
+        <p>Required Rods = Total Area (sq ft) / 10</p>
       </div>
       <h3 class="text-xl font-semibold mb-4 text-gray-600">Labor Details</h3>
       <table class="table-auto w-full mb-4">
@@ -403,11 +415,20 @@ export default function DashCostCalculator() {
                         <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                   </div>
-                  <div className="mt-4">
-                     <p>Minimum Order = 1 cubic meter</p>
-                     <p>Cost per cubic meter = $210 + Tip = $<TextInput id="tip" type="number" value={tip} onChange={(e) => setTip(parseFloat(e.target.value))} className="text-black" /></p>
-                     <p>Extra Cost for 2 Extra Meters = $800</p>
-                     <p>Extra Cost for 1 Extra Meter = $500</p>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6 text-blue-400">
+                     <div>
+                        <Label htmlFor="costPerCubicMeter">Cost per cubic meter ($)</Label>
+                        <TextInput id="costPerCubicMeter" type="number" value="210" readOnly />
+                     </div>
+                     <div>
+                        <Label htmlFor="tip">Tip ($)</Label>
+                        <TextInput id="tip" type="number" value={tip} onChange={(e) => setTip(parseFloat(e.target.value))} className="text-black" />
+                     </div>
+                     <div></div>
+                  </div>
+                  <div className="text-blue-500">
+                     <p>Minimum load until 2.5 cubic meter values</p>
+                     <div htmlFor="extraCostFor2Meters">Extra Cost for 2 Extra Meters ($) = 800</div>
                      <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
                   </div>
                </div>
@@ -422,13 +443,13 @@ export default function DashCostCalculator() {
                         <TextInput id="digArea" type="number" value={digArea} onChange={(e) => setDigArea(e.target.value)} placeholder="Enter dig area in sq ft" />
                      </div>
                      <div>
-                        <Label htmlFor="depth">Depth for Bins (inches)</Label>
+                        <Label htmlFor="depth">Depth for digging (inches)</Label>
                         <TextInput id="depth" type="number" value={depth} onChange={(e) => setDepth(e.target.value)} placeholder="Enter depth in inches" />
                      </div>
                      <div>
                         <Label htmlFor="binType">Bin Type</Label>
                         <Select id="binType" value={binType} onChange={(e) => setBinType(e.target.value)}>
-                           <option value="5-yard">5 Yard Bin - $400</option>
+                           <option value="5-yard">5 Yard Bin - $500</option>
                            <option value="10-yard">10 Yard Bin - $450</option>
                            <option value="14-yard">14 Yard Bin - $550 (Brampton)</option>
                         </Select>
@@ -439,7 +460,7 @@ export default function DashCostCalculator() {
                      </div>
                      <div>
                         <Label htmlFor="binCost">Bin Cost ($)</Label>
-                        <TextInput id="binCost" type="number" value={calculateBins() * (binType === '5-yard' ? 400 : binType === '10-yard' ? 450 : 550)} readOnly className="text-blue-500" />
+                        <TextInput id="binCost" type="number" value={calculateBins() * (binType === '5-yard' ? 500 : binType === '10-yard' ? 450 : 550)} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
@@ -450,15 +471,15 @@ export default function DashCostCalculator() {
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Reinforcement Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label htmlFor="wireMeshArea">Wire Mesh Area (sq ft)</Label>
-                        <TextInput id="wireMeshArea" type="number" value={wireMeshArea} onChange={(e) => setWireMeshArea(parseInt(e.target.value))} />
-                     </div>
-                     <div>
                         <Label htmlFor="reinforcementType">Reinforcement Type</Label>
                         <Select id="reinforcementType" value={reinforcementType} onChange={(e) => setReinforcementType(e.target.value)}>
                            <option value="mesh">Wire Mesh</option>
                            <option value="rod">Rods</option>
                         </Select>
+                     </div>
+                     <div>
+                        <Label htmlFor="wireMeshArea">Wire Mesh Area (sq ft)</Label>
+                        <TextInput id="wireMeshArea" type="number" value={wireMeshArea} onChange={(e) => setWireMeshArea(parseFloat(e.target.value))} />
                      </div>
                      <div>
                         <Label htmlFor="meshCount">Wire Mesh Count</Label>
@@ -478,7 +499,7 @@ export default function DashCostCalculator() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
                         <Label>Number of General Labor Days</Label>
-                        <TextInput type="number" value={generalLaborDays} onChange={(e) => setGeneralLaborDays(parseInt(e.target.value))} />
+                        <TextInput type="number" step="0.5" value={generalLaborDays} onChange={(e) => setGeneralLaborDays(parseFloat(e.target.value))} />
                      </div>
                      <div>
                         <Label>Number of General Labor Workers</Label>
@@ -492,7 +513,7 @@ export default function DashCostCalculator() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                      <div>
                         <Label>Number of Supervisory Labor Days</Label>
-                        <TextInput type="number" value={supervisoryLaborDays} onChange={(e) => setSupervisoryLaborDays(parseInt(e.target.value))} />
+                        <TextInput type="number" step="0.5" value={supervisoryLaborDays} onChange={(e) => setSupervisoryLaborDays(parseFloat(e.target.value))} />
                      </div>
                      <div>
                         <Label>Number of Supervisory Labor Workers</Label>
