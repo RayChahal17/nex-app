@@ -9,6 +9,7 @@ import SubmitCalcEstimate from '../components/SubmitCalcEstimate';
 import ShowCalcEstimates from '../components/ShowCalcEstimates';
 import ManageCurrentJobs from '../components/DashManageCurrentJobs';
 import ScheduleJobs from '../components/DashScheduleJobs';
+import DashCostCalculator from '../components/DashCostCalculator';
 
 export default function Dashboard() {
    const location = useLocation();
@@ -35,8 +36,10 @@ export default function Dashboard() {
          );
       }
       if (tab === 'show-calc-estimates') return <ShowCalcEstimates />;
-      if (tab === 'manage-current-jobs') return <ManageCurrentJobs/>;
       if (tab === 'schedule-jobs') return <ScheduleJobs/>;
+      if (tab === 'manage-current-jobs') return <ManageCurrentJobs/>;
+      if (tab === 'cost-calculator') return <DashCostCalculator/>;
+
 
 
       return <div>Welcome to your dashboard!</div>;
