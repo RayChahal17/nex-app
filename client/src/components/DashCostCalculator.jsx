@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Select, Label, Card, Alert, TextInput, Textarea } from 'flowbite-react';
+import { Button, Select, Label, Card, Alert, TextInput } from 'flowbite-react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/solid';
 
 export default function DashCostCalculator() {
@@ -12,6 +12,7 @@ export default function DashCostCalculator() {
    const [rodCount, setRodCount] = useState(0);
    const [meshCount, setMeshCount] = useState(0);
    const [concreteLoad, setConcreteLoad] = useState(0);
+   const [concreteCost, setConcreteCost] = useState(0);
    const [generalLaborDays, setGeneralLaborDays] = useState(0);
    const [generalLaborWorkers, setGeneralLaborWorkers] = useState(0);
    const [generalLaborCost, setGeneralLaborCost] = useState(110);
@@ -50,9 +51,18 @@ export default function DashCostCalculator() {
    };
 
    const calculateConcreteLoad = () => {
-      const thicknessInFeet = slabThickness / 12;
-      const volume = area * thicknessInFeet * 0.0125;
-      setConcreteLoad(volume);
+      const coveragePerCubicMeter = 80; // 1 cubic meter covers 80 sq ft at 4 inches
+      const slabThicknessFactor = slabThickness / 4;
+      const adjustedCoverage = coveragePerCubicMeter / slabThicknessFactor;
+      const numberOfCubicMeters = area / adjustedCoverage;
+      const roundedVolume = Math.ceil(numberOfCubicMeters * 10) / 10;
+
+      const baseCost = 245;
+      const extraCost = roundedVolume > 1 ? (roundedVolume - 1) * 500 : 0;
+      const totalConcreteCost = roundedVolume * baseCost + extraCost;
+
+      setConcreteLoad(roundedVolume);
+      setConcreteCost(totalConcreteCost);
    };
 
    const calculateGravelYards = () => {
@@ -124,7 +134,6 @@ export default function DashCostCalculator() {
 
       const rodCost = rodCount * 3;
       const meshCost = meshCount * 6;
-      const concreteCost = concreteLoad * 245;
 
       const totalGeneralLaborCost = generalLaborDays * generalLaborWorkers * generalLaborCost;
       const totalSupervisoryLaborCost = supervisoryLaborDays * supervisoryLaborWorkers * supervisoryLaborCost;
@@ -157,21 +166,28 @@ export default function DashCostCalculator() {
         <h4 class="text-lg font-semibold mb-2">Formulas:</h4>
         <p>Total Area (sq meters) × 10.764 = Total Area (sq ft)</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Concrete Details</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Concrete Details</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           <tr>
             <td class="border px-4 py-2">Concrete Load</td>
             <td class="border px-4 py-2">${concreteLoad.toFixed(2)} cubic meters</td>
           </tr>
+          <tr>
+            <td class="border px-4 py-2">Concrete Cost</td>
+            <td class="border px-4 py-2">$${concreteCost.toFixed(2)}</td>
+          </tr>
         </tbody>
       </table>
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
-        <h4 class="text-lg font-semibold mb-2">Formulas:</h4>
-        <p>Slab Thickness (inches) / 12 = Slab Thickness (feet)</p>
-        <p>Total Area (sq ft) × Slab Thickness (feet) × 0.0125 = Concrete Load (cubic meters)</p>
+        <h4 class="text-lg font-semibold mb-2">Formulas & Notes:</h4>
+        <p>Minimum Order = 1 cubic meter</p>
+        <p>Cost per cubic meter = $210 + $25 tip = $245</p>
+        <p>Extra Cost for 2 Extra Meters = $800</p>
+        <p>Extra Cost for 1 Extra Meter = $500</p>
+        <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Digging and Bin Details</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Digging and Bin Details</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           <tr>
@@ -207,7 +223,7 @@ export default function DashCostCalculator() {
         <p>14 Yard Bin = 14 × 27 = 378 cubic feet</p>
         <p>Number of 14 Yard Bins = Volume (cubic feet) / 378</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Reinforcement Details</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Reinforcement Details</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           <tr>
@@ -235,7 +251,7 @@ export default function DashCostCalculator() {
         <p>Rods Coverage = 1 rod per 10 sq ft</p>
         <p>Required Rods = Total Area (sq ft) / 10</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Labor Details</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Labor Details</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           <tr>
@@ -269,7 +285,7 @@ export default function DashCostCalculator() {
         <p>Total General Labor Cost = General Labor Days × General Labor Workers × General Labor Cost</p>
         <p>Total Supervisory Labor Cost = Supervisory Labor Days × Supervisory Labor Workers × Supervisory Labor Cost</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Gravel Details</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Gravel Details</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           <tr>
@@ -291,7 +307,7 @@ export default function DashCostCalculator() {
         <p>Gravel Volume (cubic yards) = Total Area (sq ft) × 0.00333</p>
         <p>Total Gravel Cost = Gravel Volume × Gravel Cost</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Extra Costs</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Extra Costs</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           ${extraCosts.map(cost => `
@@ -306,7 +322,7 @@ export default function DashCostCalculator() {
         <h4 class="text-lg font-semibold mb-2">Formulas:</h4>
         <p>Total Extra Costs = Sum of all extra costs</p>
       </div>
-      <h3 class="text-xl font-semibold mb-2 text-gray-600">Total Cost</h3>
+      <h3 class="text-xl font-semibold mb-4 text-gray-600">Total Cost</h3>
       <table class="table-auto w-full mb-4">
         <tbody>
           <tr>
@@ -367,9 +383,22 @@ export default function DashCostCalculator() {
 
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Concrete Details</h3>
-                  <div>
-                     <Label htmlFor="concreteLoad">Concrete Load (cubic meters)</Label>
-                     <TextInput id="concreteLoad" type="number" value={concreteLoad.toFixed(2)} readOnly />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                        <Label htmlFor="concreteLoad">Concrete Load (cubic meters)</Label>
+                        <TextInput id="concreteLoad" type="number" value={concreteLoad.toFixed(2)} readOnly />
+                     </div>
+                     <div>
+                        <Label htmlFor="concreteCost">Concrete Cost ($)</Label>
+                        <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly />
+                     </div>
+                  </div>
+                  <div className="mt-4">
+                     <p>Minimum Order = 1 cubic meter</p>
+                     <p>Cost per cubic meter = $210 + $25 tip = $245</p>
+                     <p>Extra Cost for 2 Extra Meters = $800</p>
+                     <p>Extra Cost for 1 Extra Meter = $500</p>
+                     <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
                   </div>
                </div>
 
