@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Select, Label, Card, Alert, TextInput } from 'flowbite-react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/solid';
+import i18nDashCostCalculator from '../utils/i18nDashCostCalculator';
+import { useTranslation } from 'react-i18next';
 
 export default function DashCostCalculator() {
    const [area, setArea] = useState(0);
@@ -29,7 +31,11 @@ export default function DashCostCalculator() {
    const [details, setDetails] = useState('');
    const [rawConcreteLoad, setRawConcreteLoad] = useState(0);
    const [roundedVolume, setRoundedVolume] = useState(0);
-   
+   const { t } = useTranslation();
+
+   const changeLanguage = (lng) => {
+      i18nDashCostCalculator.changeLanguage(lng);
+   };
 
 
    useEffect(() => {
@@ -67,31 +73,31 @@ export default function DashCostCalculator() {
       const slabThicknessFactor = slabThickness / 4;
       const adjustedCoverage = coveragePerCubicMeter / slabThicknessFactor;
       const numberOfCubicMeters = area / adjustedCoverage;
-  
+
       setRawConcreteLoad(numberOfCubicMeters); // Store the unrounded concrete load
-  
+
       // Round to nearest 0.5 cubic meter
       let roundedVolume = Math.ceil(numberOfCubicMeters * 2) / 2;
       setRoundedVolume(roundedVolume);
-  
+
       const baseCost = 210;
       const minOrderCost1 = 500;
       const minOrderCost2 = 800;
-  
+
       let totalConcreteCost;
-  
+
       if (roundedVolume <= 1) {
-          totalConcreteCost = minOrderCost1;
+         totalConcreteCost = minOrderCost1;
       } else if (roundedVolume <= 2.5) {
-          totalConcreteCost = minOrderCost2;
+         totalConcreteCost = minOrderCost2;
       } else {
-          totalConcreteCost = roundedVolume * baseCost + tip;
+         totalConcreteCost = roundedVolume * baseCost + tip;
       }
-  
+
       setConcreteLoad(roundedVolume);
       setConcreteCost(totalConcreteCost);
-  };
-  
+   };
+
 
 
 
@@ -400,206 +406,206 @@ export default function DashCostCalculator() {
    return (
       <div className="container mx-auto md:p-6 p-1 bg-gray-100">
          <Card className="shadow-lg md:p-6 p-1 rounded-lg">
-            <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">Concrete Cost Estimation</h2>
+            <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">{t('Concrete Cost Estimation')}</h2>
+            <Button onClick={() => changeLanguage('en')}>English</Button>
+            <Button onClick={() => changeLanguage('pa')}>Punjabi</Button>
             <div className="space-y-8">
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Project Area Details</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Project Area Details')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label htmlFor="area">Total Area (sq ft)</Label>
-                        <TextInput id="area" type="number" value={area} onChange={(e) => setArea(e.target.value)} placeholder="Enter total area in sq ft" />
+                        <Label htmlFor="area">{t('Total Area (sq ft)')}</Label>
+                        <TextInput id="area" type="number" value={area} onChange={(e) => setArea(e.target.value)} placeholder={t('Enter total area in sq ft')} />
                      </div>
                      <div className="mt-4">
-                        <Label htmlFor="slabThickness">Slab Thickness (inches)</Label>
+                        <Label htmlFor="slabThickness">{t('Slab Thickness (inches)')}</Label>
                         <Select id="slabThickness" value={slabThickness} onChange={(e) => setSlabThickness(e.target.value)}>
-                           <option value={4}>4 inches (default)</option>
-                           <option value={5}>5 inches</option>
+                           <option value={4}>{t('4 inches (default)')}</option>
+                           <option value={5}>{t('5 inches')}</option>
                         </Select>
                      </div>
                   </div>
                </div>
-   
+
                <hr />
-   
+
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Concrete Details</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Concrete Details')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label htmlFor="concreteLoad">Concrete Load (cubic meters)</Label>
+                        <Label htmlFor="concreteLoad">{t('Concrete Load (cubic meters)')}</Label>
                         <TextInput id="concreteLoad" type="number" value={concreteLoad.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                      <div>
-                        <Label htmlFor="concreteCost">Concrete Cost ($)</Label>
+                        <Label htmlFor="concreteCost">{t('Concrete Cost ($)')}</Label>
                         <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                   </div>
                   <p className="mt-4 text-blue-500">
-                  Extra load of {((roundedVolume - rawConcreteLoad))} cubic meters added to {rawConcreteLoad} cubic meters to make {roundedVolume.toFixed(2)} cubic meters to prevent load scarcity on the field.
-
-</p>
-
+                     {t('Extra load of')} {((roundedVolume - rawConcreteLoad))} {t('cubic meters added to')} {rawConcreteLoad} {t('cubic meters to make')} {roundedVolume.toFixed(2)} {t('cubic meters to prevent load scarcity on the field')}.
+                  </p>
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6 text-blue-400">
                      <div>
-                        <Label htmlFor="costPerCubicMeter">Cost per cubic meter ($)</Label>
+                        <Label htmlFor="costPerCubicMeter">{t('Cost per cubic meter ($)')}</Label>
                         <TextInput id="costPerCubicMeter" type="number" value="210" readOnly />
                      </div>
                      <div>
-                        <Label htmlFor="tip">Tip ($)</Label>
+                        <Label htmlFor="tip">{t('Tip ($)')}</Label>
                         <TextInput id="tip" type="number" value={tip} onChange={(e) => setTip(parseFloat(e.target.value))} className="text-black" />
                      </div>
                      <div></div>
                   </div>
                   <div className="text-blue-500">
-                     <p>Minimum load until 2.5 cubic meter values</p>
-                     <div htmlFor="extraCostFor2Meters">Extra Cost for 2 Extra Meters ($) = 800</div>
-                     <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
+                     <p>{t('Minimum load until 2.5 cubic meter values')}</p>
+                     <div>{t('Extra Cost for 2 Extra Meters ($)')} = 800</div>
+                     <p>{t('Recommendation: Always order 1/2 meter extra to avoid shortages')}</p>
                   </div>
                </div>
-   
+
                <hr />
-   
+
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Digging and Bin Details</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Digging and Bin Details')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label htmlFor="digArea">Dig Area (sq ft)</Label>
-                        <TextInput id="digArea" type="number" value={digArea} onChange={(e) => setDigArea(e.target.value)} placeholder="Enter dig area in sq ft" />
+                        <Label htmlFor="digArea">{t('Dig Area (sq ft)')}</Label>
+                        <TextInput id="digArea" type="number" value={digArea} onChange={(e) => setDigArea(e.target.value)} placeholder={t('Enter dig area in sq ft')} />
                      </div>
                      <div>
-                        <Label htmlFor="depth">Depth for digging (inches)</Label>
-                        <TextInput id="depth" type="number" value={depth} onChange={(e) => setDepth(e.target.value)} placeholder="Enter depth in inches" />
+                        <Label htmlFor="depth">{t('Depth for digging (inches)')}</Label>
+                        <TextInput id="depth" type="number" value={depth} onChange={(e) => setDepth(e.target.value)} placeholder={t('Enter depth in inches')} />
                      </div>
                      <div>
-                        <Label htmlFor="binType">Bin Type</Label>
+                        <Label htmlFor="binType">{t('Bin Type')}</Label>
                         <Select id="binType" value={binType} onChange={(e) => setBinType(e.target.value)}>
-                           <option value="5-yard">5 Yard Bin - $500</option>
-                           <option value="10-yard">10 Yard Bin - $450</option>
-                           <option value="14-yard">14 Yard Bin - $550 (Brampton)</option>
+                           <option value="5-yard">5 {t('Yard Bin')} - $500</option>
+                           <option value="10-yard">10 {t('Yard Bin')} - $450</option>
+                           <option value="14-yard">14 {t('Yard Bin')} - $550 {t('(Brampton)')}</option>
                         </Select>
                      </div>
                      <div>
-                        <Label htmlFor="binCount">Number of Bins</Label>
+                        <Label htmlFor="binCount">{t('Number of Bins')}</Label>
                         <TextInput id="binCount" type="number" value={calculateBins()} readOnly className="text-blue-500" />
                      </div>
                      <div>
-                        <Label htmlFor="binCost">Bin Cost ($)</Label>
+                        <Label htmlFor="binCost">{t('Bin Cost ($)')}</Label>
                         <TextInput id="binCost" type="number" value={calculateBins() * (binType === '5-yard' ? 500 : binType === '10-yard' ? 450 : 550)} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
-   
+
                <hr />
-   
+
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Reinforcement Details</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Reinforcement Details')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label htmlFor="reinforcementType">Reinforcement Type</Label>
+                        <Label htmlFor="reinforcementType">{t('Reinforcement Type')}</Label>
                         <Select id="reinforcementType" value={reinforcementType} onChange={(e) => setReinforcementType(e.target.value)}>
-                           <option value="mesh">Wire Mesh</option>
-                           <option value="rod">Rods</option>
+                           <option value="mesh">{t('Wire Mesh')}</option>
+                           <option value="rod">{t('Rods')}</option>
                         </Select>
                      </div>
                      <div>
-                        <Label htmlFor="wireMeshArea">Wire Mesh Area (sq ft)</Label>
+                        <Label htmlFor="wireMeshArea">{t('Wire Mesh Area (sq ft)')}</Label>
                         <TextInput id="wireMeshArea" type="number" value={wireMeshArea} onChange={(e) => setWireMeshArea(parseFloat(e.target.value))} />
                      </div>
                      <div>
-                        <Label htmlFor="meshCount">Wire Mesh Count</Label>
+                        <Label htmlFor="meshCount">{t('Wire Mesh Count')}</Label>
                         <TextInput id="meshCount" type="number" value={meshCount} readOnly className="text-blue-500" />
                      </div>
                      <div>
-                        <Label htmlFor="rodCount">Rod Count</Label>
+                        <Label htmlFor="rodCount">{t('Rod Count')}</Label>
                         <TextInput id="rodCount" type="number" value={rodCount} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
-   
+
                <hr />
-   
+
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Labor Details</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Labor Details')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label>Number of General Labor Days</Label>
+                        <Label>{t('Number of General Labor Days')}</Label>
                         <TextInput type="number" step="0.5" value={generalLaborDays} onChange={(e) => setGeneralLaborDays(parseFloat(e.target.value))} />
                      </div>
                      <div>
-                        <Label>Number of General Labor Workers</Label>
+                        <Label>{t('Number of General Labor Workers')}</Label>
                         <TextInput type="number" value={generalLaborWorkers} onChange={(e) => setGeneralLaborWorkers(parseInt(e.target.value))} />
                      </div>
                      <div>
-                        <Label>General Labor Cost ($/day)</Label>
+                        <Label>{t('General Labor Cost ($/day)')}</Label>
                         <TextInput type="number" value={generalLaborCost} onChange={(e) => setGeneralLaborCost(parseFloat(e.target.value))} />
                      </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                      <div>
-                        <Label>Number of Supervisory Labor Days</Label>
+                        <Label>{t('Number of Supervisory Labor Days')}</Label>
                         <TextInput type="number" step="0.5" value={supervisoryLaborDays} onChange={(e) => setSupervisoryLaborDays(parseFloat(e.target.value))} />
                      </div>
                      <div>
-                        <Label>Number of Supervisory Labor Workers</Label>
+                        <Label>{t('Number of Supervisory Labor Workers')}</Label>
                         <TextInput type="number" value={supervisoryLaborWorkers} onChange={(e) => setSupervisoryLaborWorkers(parseInt(e.target.value))} />
                      </div>
                      <div>
-                        <Label>Supervisory Labor Cost ($/day)</Label>
+                        <Label>{t('Supervisory Labor Cost ($/day)')}</Label>
                         <TextInput type="number" value={supervisoryLaborCost} onChange={(e) => setSupervisoryLaborCost(parseFloat(e.target.value))} />
                      </div>
                   </div>
                </div>
-   
+
                <hr />
-   
+
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Gravel Details</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Gravel Details')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
-                        <Label htmlFor="gravelType">Gravel Type</Label>
+                        <Label htmlFor="gravelType">{t('Gravel Type')}</Label>
                         <Select id="gravelType" value={gravelType} onChange={handleGravelTypeChange}>
-                           <option value="clean">Clean Gravel - $55/yard (default)</option>
-                           <option value="recycled">Recycled with Asphalt - $25/yard</option>
-                           <option value="crushed">Recycled with Crushed Concrete - $30/yard</option>
-                           <option value="below-pavers">Below Pavers (Gravel A) - $40/yard</option>
+                           <option value="clean">{t('Clean Gravel - $55/yard (default)')}</option>
+                           <option value="recycled">{t('Recycled with Asphalt - $25/yard')}</option>
+                           <option value="crushed">{t('Recycled with Crushed Concrete - $30/yard')}</option>
+                           <option value="below-pavers">{t('Below Pavers (Gravel A) - $40/yard')}</option>
                         </Select>
                      </div>
                      <div>
-                        <Label htmlFor="gravelYards">Gravel Yards</Label>
+                        <Label htmlFor="gravelYards">{t('Gravel Yards')}</Label>
                         <TextInput id="gravelYards" type="number" value={gravelYards.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                      <div>
-                        <Label htmlFor="deliveryFee">Delivery Fee ($)</Label>
+                        <Label htmlFor="deliveryFee">{t('Delivery Fee ($)')}</Label>
                         <TextInput id="deliveryFee" type="number" value={80} readOnly className="text-blue-500" />
                      </div>
                   </div>
                </div>
-   
+
                <hr />
-   
+
                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-600">Extra Costs</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Extra Costs')}</h3>
                   {extraCosts.length > 0 && extraCosts.map((cost) => (
                      <div key={cost.id} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                         <div>
-                           <Label>Extra Cost Name</Label>
+                           <Label>{t('Extra Cost Name')}</Label>
                            <TextInput type="text" value={cost.name} onChange={(e) => handleExtraCostChange(cost.id, 'name', e.target.value)} />
                         </div>
                         <div>
-                           <Label>Extra Cost ($)</Label>
+                           <Label>{t('Extra Cost ($)')}</Label>
                            <TextInput type="number" value={cost.cost} onChange={(e) => handleExtraCostChange(cost.id, 'cost', parseFloat(e.target.value))} />
                         </div>
                         <Button color="failure" onClick={() => removeExtraCost(cost.id)}><TrashIcon className="h-5 w-5" /></Button>
                      </div>
                   ))}
-                  <Button onClick={addExtraCost}><PlusIcon className="h-5 w-5" /> Add Extra Cost</Button>
+                  <Button onClick={addExtraCost}><PlusIcon className="h-5 w-5" /> {t('Add Extra Cost')}</Button>
                </div>
-   
+
                <hr />
-   
+
                <div className="text-center">
-                  <Button className="mt-6" onClick={calculateTotalCost}>Calculate Total Cost</Button>
+                  <Button className="mt-6" onClick={calculateTotalCost}>{t('Calculate Total Cost')}</Button>
                   <Alert className="mt-6" color="info">
-                     <span className="font-bold">Total Cost: ${totalCost.toFixed(2)}</span>
+                     <span className="font-bold">{t('Total Cost:')} ${totalCost.toFixed(2)}</span>
                   </Alert>
                   <div dangerouslySetInnerHTML={{ __html: details }} className="mt-6" />
                </div>
@@ -607,7 +613,6 @@ export default function DashCostCalculator() {
          </Card>
       </div>
    );
-   
-   
-   
+
+
 }

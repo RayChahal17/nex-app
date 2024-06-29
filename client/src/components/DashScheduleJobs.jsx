@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Button, Modal, Select, Textarea, TextInput, Spinner } from 'flowbite-react';
 import { DateTime } from 'luxon';
 import { WiThermometer, WiRain, WiSnow, WiStrongWind, WiHumidity } from 'react-icons/wi';
-
+import { useTranslation } from 'react-i18next';
+import i18DashScheduleJobs from '../utils/i18DashScheduleJobs';
 
 export default function ScheduleJobs() {
    const [jobs, setJobs] = useState([]);
@@ -26,6 +27,11 @@ export default function ScheduleJobs() {
    const [weatherModalData, setWeatherModalData] = useState({ date: '', city: '' });
    const [unassignedJobs, setUnassignedJobs] = useState([]);
 
+   const { t } = useTranslation();
+
+const changeLanguage = (lng) => {
+   i18DashScheduleJobs.changeLanguage(lng);
+};
 
    useEffect(() => {
       fetchJobs();
@@ -240,13 +246,44 @@ export default function ScheduleJobs() {
 
 
    // Button to toggle visibility
-   const renderToggleOldJobsButton = () => (
-      <div className='flex justify-center align-center mt-10'>
-         <Button color="dark" pill onClick={() => setShowOldJobs(!showOldJobs)} className='px-10 font-bold'>
-            {showOldJobs ? 'Hide Old or Completed Jobs' : 'Show Old or Completed Jobs'}
-         </Button>
+   // Example: Toggle Old Jobs Button
+const renderToggleOldJobsButton = () => (
+   <div className='flex justify-center align-center mt-10'>
+      <Button color="dark" pill onClick={() => setShowOldJobs(!showOldJobs)} className='px-10 font-bold'>
+         {showOldJobs ? t('Hide Old or Completed Jobs') : t('Show Old or Completed Jobs')}
+      </Button>
+   </div>
+);
+
+// Example: Render Unassigned Jobs
+const renderUnassignedJobs = () => {
+   return (
+      <div className="md:px-20 px-5 py-5 text-center rounded-lg border-solid border-teal-700 mt-10 bg-blue-50 border-2">
+         <h3 className="md:text-3xl text-xl text-slate-900 font-bold mb-4">{t('Unassigned Jobs')}</h3>
+         {unassignedJobs.map((job) => (
+            <div key={job._id} className="mt-4 p-4 bg-gray-300 rounded-lg text-sm">
+               <h3 className="text-sm font-bold">{job.customerInfo.name} ({job.status})</h3>
+               <div><strong>{t('Address')}:</strong> {job.customerInfo.address}, {job.customerInfo.city}</div>
+               <div><strong>{t('Estimated Cost')}:</strong> ${job.discountedEstimate?.toFixed(2) || 'N/A'}</div>
+               <div><strong>{t('Service Type')}:</strong> {job.serviceType || 'N/A'}</div>
+               <div className="mt-4">
+                  <Select
+                     value={job.status}
+                     onChange={(e) => handleJobStatusChange(job._id, e.target.value)}
+                     className="w-full"
+                  >
+                     <option value="Job Pending">{t('Job Pending')}</option>
+                     <option value="Job Waiting">{t('Job Waiting')}</option>
+                     <option value="Job In Progress">{t('Job In Progress')}</option>
+                     <option value="Job Completed">{t('Job Completed')}</option>
+                  </Select>
+               </div>
+            </div>
+         ))}
       </div>
    );
+};
+
 
    const deleteSchedule = async () => {
       if (!selectedJob || !selectedTime) return;
@@ -425,35 +462,36 @@ export default function ScheduleJobs() {
    const renderWeatherModal = () => {
       const { date, city } = weatherModalData;
       const weatherForDate = weatherData[date] || [];
-
+   
       return (
          <Modal show={weatherModalOpen} onClose={() => setWeatherModalOpen(false)} size="lg">
-            <Modal.Header>Weather Details for {city} on {date}</Modal.Header>
+            <Modal.Header>{t('Weather Details for')} {city} {t('on')} {date}</Modal.Header>
             <Modal.Body>
                <div className="space-y-4">
                   {weatherForDate.length > 0 ? (
                      weatherForDate.map((weather, index) => (
                         <div key={index} className="weather-detail p-2 border rounded-lg bg-gray-50">
-                           <p><strong>Time:</strong> {new Date(weather.time).toLocaleTimeString()}</p>
-                           <p><strong>Temperature:</strong> {weather.temp} °C</p>
-                           <p><strong>Weather:</strong> {weather.description}</p>
-                           <p><strong>Rain:</strong> {weather.rain > 0 ? `${weather.rain} mm` : 'No rain'}</p>
-                           <p><strong>Snow:</strong> {weather.snow > 0 ? `${weather.snow} mm` : 'No snow'}</p>
+                           <p><strong>{t('Time')}:</strong> {new Date(weather.time).toLocaleTimeString()}</p>
+                           <p><strong>{t('Temperature')}:</strong> {weather.temp} °C</p>
+                           <p><strong>{t('Weather')}:</strong> {weather.description}</p>
+                           <p><strong>{t('Rain')}:</strong> {weather.rain > 0 ? `${weather.rain} mm` : t('No rain')}</p>
+                           <p><strong>{t('Snow')}:</strong> {weather.snow > 0 ? `${weather.snow} mm` : t('No snow')}</p>
                         </div>
                      ))
                   ) : (
-                     <p>No weather data available.</p>
+                     <p>{t('No weather data available.')}</p>
                   )}
                </div>
             </Modal.Body>
             <Modal.Footer>
                <Button onClick={() => setWeatherModalOpen(false)} gradientMonochrome="info" size="sm">
-                  Close
+                  {t('Close')}
                </Button>
             </Modal.Footer>
          </Modal>
       );
    };
+   
 
    const renderBriefWeather = (date, city) => {
       if (!weatherData[date]) return null;
@@ -685,20 +723,18 @@ export default function ScheduleJobs() {
    };
 
 
-
    const renderScheduleModal = () => (
       <Modal show={modalOpen} onClose={() => setModalOpen(false)} size="lg">
-         <Modal.Header>Schedule for {selectedDate}</Modal.Header>
+         <Modal.Header>{t('Schedule for')} {selectedDate}</Modal.Header>
          <Modal.Body>
             <div className="space-y-4">
-               {/* Existing fields and selectors */}
                <div>
                   <Select
                      value={selectedJob?._id || ''}
                      onChange={(e) => handleJobSelect(e.target.value)}
                      className="w-full"
                   >
-                     <option value="">Select Job</option>
+                     <option value="">{t('Select Job')}</option>
                      {jobs
                         .filter(job => ['Job Pending', 'Job Waiting', 'Job In Progress'].includes(job.status))
                         .map(job => (
@@ -715,16 +751,16 @@ export default function ScheduleJobs() {
                      className="w-full"
                      disabled={!selectedJob}
                   >
-                     <option value="">Select Time</option>
-                     <option value="morning">Morning</option>
-                     <option value="noon">Noon</option>
-                     <option value="evening">Evening</option>
-                     <option value="whole day">Whole Day</option>
+                     <option value="">{t('Select Time')}</option>
+                     <option value="morning">{t('Morning')}</option>
+                     <option value="noon">{t('Noon')}</option>
+                     <option value="evening">{t('Evening')}</option>
+                     <option value="whole day">{t('Whole Day')}</option>
                   </Select>
                </div>
                <div>
                   <Textarea
-                     placeholder="Add notes"
+                     placeholder={t("Add notes")}
                      value={notes}
                      onChange={(e) => setNotes(e.target.value)}
                      className="w-full"
@@ -734,14 +770,14 @@ export default function ScheduleJobs() {
                <div className="flex flex-col space-y-2">
                   <div className="flex space-x-2">
                      <TextInput
-                        placeholder="Add task"
+                        placeholder={t("Add task")}
                         value={taskNote}
                         onChange={(e) => setTaskNote(e.target.value)}
                         className="w-full"
                         disabled={!selectedJob}
                      />
                      <Button onClick={addTask} gradientMonochrome="info" size="sm" disabled={!taskNote.trim() || !selectedJob}>
-                        Add Task
+                        {t("Add Task")}
                      </Button>
                   </div>
                   {tasks.map((task, index) => (
@@ -752,12 +788,12 @@ export default function ScheduleJobs() {
                            onChange={(e) => handleTaskStatusChange(selectedJob._id, selectedTime, index, e.target.value)}
                            className="w-1/3"
                         >
-                           <option value="to be done">To be done</option>
-                           <option value="completed">Completed</option>
-                           <option value="cancelled">Cancelled</option>
+                           <option value="to be done">{t('To be done')}</option>
+                           <option value="completed">{t('Completed')}</option>
+                           <option value="cancelled">{t('Cancelled')}</option>
                         </Select>
                         <Button size="xs" gradientMonochrome="failure" onClick={() => deleteTask(selectedJob._id, index)}>
-                           Delete
+                           {t('Delete')}
                         </Button>
                      </div>
                   ))}
@@ -767,18 +803,18 @@ export default function ScheduleJobs() {
          </Modal.Body>
          <Modal.Footer>
             <Button onClick={saveSchedule} gradientMonochrome="success" size="sm">
-               Save Schedule
+               {t('Save Schedule')}
             </Button>
             <Button onClick={deleteSchedule} gradientMonochrome="failure" size="sm" disabled={!selectedTime}>
-               Delete Schedule
+               {t('Delete Schedule')}
             </Button>
             <Button onClick={() => setModalOpen(false)} gradientMonochrome="info" size="sm">
-               Close
+               {t('Close')}
             </Button>
          </Modal.Footer>
       </Modal>
    );
-
+   
 
 
    const deleteNote = (jobId, entryIndex, noteIndex) => {
@@ -830,40 +866,40 @@ export default function ScheduleJobs() {
          evening: 'bg-yellow-300',
          'whole day': 'bg-yellow-500',
       };
-
+   
       const formatDate = (date) => {
          const today = DateTime.now().setZone('America/Toronto').startOf('day');
          const entryDate = DateTime.fromISO(date, { zone: 'America/Toronto' }).startOf('day');
-         if (entryDate.equals(today)) return `${entryDate.toLocaleString(DateTime.DATE_SHORT)} (Today)`;
-         if (entryDate.equals(today.plus({ days: 1 }))) return `${entryDate.toLocaleString(DateTime.DATE_SHORT)} (Tomorrow)`;
+         if (entryDate.equals(today)) return `${entryDate.toLocaleString(DateTime.DATE_SHORT)} (${t('Today')})`;
+         if (entryDate.equals(today.plus({ days: 1 }))) return `${entryDate.toLocaleString(DateTime.DATE_SHORT)} (${t('Tomorrow')})`;
          return entryDate.toLocaleString(DateTime.DATE_SHORT);
       };
-
+   
       const timeOrder = ['morning', 'noon', 'evening', 'whole day'];
-
+   
       const groupedSchedule = job.schedule.reduce((acc, entry) => {
          const date = entry.date;
          if (!acc[date]) acc[date] = [];
          acc[date].push(entry);
          return acc;
       }, {});
-
+   
       const sortedDates = Object.keys(groupedSchedule).sort((a, b) => new Date(a) - new Date(b));
-
+   
       return (
          <div className="mt-4 md:p-5 p-2 md:mb-10 mb-4 bg-blue-50 border-solid shadow-[inset_0px_0px_17px_1px_#48bb78]  rounded-lg border-2 ">
             <h3 className="text-2xl text-red-800 font-bold mb-2">{job.customerInfo.name} ({job.status})</h3>
             <div className="mb-2">
-               <strong>Address:</strong> {job.customerInfo.address}, {job.customerInfo.city}
+               <strong>{t('Address')}:</strong> {job.customerInfo.address}, {job.customerInfo.city}
             </div>
             <div className="mb-2">
-               <strong>Estimated Cost:</strong> ${job.discountedEstimate?.toFixed(2) || 'N/A'}
+               <strong>{t('Estimated Cost')}:</strong> ${job.discountedEstimate?.toFixed(2) || 'N/A'}
             </div>
             <div className="mb-2">
-               <strong>Service Type:</strong> {job.serviceType || 'N/A'}
+               <strong>{t('Service Type')}:</strong> {job.serviceType || 'N/A'}
             </div>
             <div className="mb-2 text-red-900">
-               <strong>Scheduled Dates:</strong> {sortedDates.map(date => formatDate(date)).join(', ')}
+               <strong>{t('Scheduled Dates')}:</strong> {sortedDates.map(date => formatDate(date)).join(', ')}
             </div>
             {sortedDates.map(date => (
                <div key={date} className="mt-4 bg-blue-100 md:p-2 p-1 md:py-4 py-1 shadow-lg rounded-lg border">
@@ -872,11 +908,11 @@ export default function ScheduleJobs() {
                      .sort((a, b) => timeOrder.indexOf(a.time) - timeOrder.indexOf(b.time))
                      .map((entry, entryIndex) => (
                         <div key={entryIndex} className={`${timeColors[entry.time]} md:p-4 md:mt-4 mb-1 p-1 rounded-lg`}>
-                           <h4 className="text-xl font-semibold md:mb-2 mb-0">{entry.time.charAt(0).toUpperCase() + entry.time.slice(1)}</h4>
+                           <h4 className="text-xl font-semibold md:mb-2 mb-0">{t(entry.time.charAt(0).toUpperCase() + entry.time.slice(1))}</h4>
                            <div className="md:mb-2 md:p-2 mb-1 p-1 bg-gray-100 rounded-lg shadow-md flex flex-wrap">
                               {entry.notes.length > 0 && (
                                  <div className="w-full md:w-1/2 pr-4">
-                                    <strong className="block mb-2 text-gray-400">Notes ({formatDate(entry.date)}):</strong>
+                                    <strong className="block mb-2 text-gray-400">{t('Notes')} ({formatDate(entry.date)}):</strong>
                                     <ul className="list-disc pl-5">
                                        {entry.notes.map((note, noteIndex) => (
                                           <li key={noteIndex} className="mb-1">{note}</li>
@@ -886,7 +922,7 @@ export default function ScheduleJobs() {
                               )}
                               {entry.tasks.length > 0 && (
                                  <div className="w-full md:w-1/2 pl-4 md:border-l  border-gray-300">
-                                    <strong className="block mb-2 text-gray-400">Tasks ({formatDate(entry.date)}):</strong>
+                                    <strong className="block mb-2 text-gray-400">{t('Tasks')} ({formatDate(entry.date)}):</strong>
                                     <ul>
                                        {entry.tasks.map((task, taskIndex) => (
                                           <li key={taskIndex} className="mb-1 flex flex-wrap justify-between items-center">
@@ -900,12 +936,12 @@ export default function ScheduleJobs() {
                                                 onChange={(e) => handleTaskStatusChange(job._id, entry.date, entry.time, taskIndex, e.target.value)}
                                                 className="w-1/3 ml-4"
                                              >
-                                                <option value="to be done">To be done</option>
-                                                <option value="completed">Completed</option>
-                                                <option value="cancelled">Cancelled</option>
+                                                <option value="to be done">{t('To be done')}</option>
+                                                <option value="completed">{t('Completed')}</option>
+                                                <option value="cancelled">{t('Cancelled')}</option>
                                              </Select>
                                              <Button size="xs" gradientMonochrome="failure" onClick={() => deleteTask(job._id, entryIndex, taskIndex)}>
-                                                Delete
+                                                {t('Delete')}
                                              </Button>
                                           </li>
                                        ))}
@@ -924,21 +960,17 @@ export default function ScheduleJobs() {
                      onChange={(e) => handleJobStatusChange(job._id, e.target.value)}
                      className="w-full"
                   >
-                     <option value="Job Pending">Job Pending</option>
-                     <option value="Job Waiting">Job Waiting</option>
-                     <option value="Job In Progress">Job In Progress</option>
-                     <option value="Job Completed">Job Completed</option>
+                     <option value="Job Pending">{t('Job Pending')}</option>
+                     <option value="Job Waiting">{t('Job Waiting')}</option>
+                     <option value="Job In Progress">{t('Job In Progress')}</option>
+                     <option value="Job Completed">{t('Job Completed')}</option>
                   </Select>
                </div>
             )}
          </div>
       );
    };
-
-
-
-
-
+   
 
 
 
@@ -967,33 +999,6 @@ export default function ScheduleJobs() {
       return lastScheduledDate < new Date().setHours(0, 0, 0, 0) || job.status === 'Job Completed';
    });
 
-   const renderUnassignedJobs = () => {
-      return (
-         <div className="md:px-20 px-5 py-5 text-center rounded-lg border-solid border-teal-700 mt-10 bg-blue-50 border-2">
-            <h3 className="md:text-3xl text-xl text-slate-900 font-bold mb-4">Unassigned Jobs</h3>
-            {unassignedJobs.map((job) => (
-               <div key={job._id} className="mt-4 p-4 bg-gray-300 rounded-lg text-sm">
-                  <h3 className="text-sm font-bold">{job.customerInfo.name} ({job.status})</h3>
-                  <div><strong>Address:</strong> {job.customerInfo.address}, {job.customerInfo.city}</div>
-                  <div><strong>Estimated Cost:</strong> ${job.discountedEstimate?.toFixed(2) || 'N/A'}</div>
-                  <div><strong>Service Type:</strong> {job.serviceType || 'N/A'}</div>
-                  <div className="mt-4">
-                     <Select
-                        value={job.status}
-                        onChange={(e) => handleJobStatusChange(job._id, e.target.value)}
-                        className="w-full"
-                     >
-                        <option value="Job Pending">Job Pending</option>
-                        <option value="Job Waiting">Job Waiting</option>
-                        <option value="Job In Progress">Job In Progress</option>
-                        <option value="Job Completed">Job Completed</option>
-                     </Select>
-                  </div>
-               </div>
-            ))}
-         </div>
-      );
-   };
    
 
    const confirmDeleteJob = (jobId) => {
@@ -1094,6 +1099,9 @@ export default function ScheduleJobs() {
    return (
       <div className="p-4">
          <h1 className="text-2xl font-bold mb-4">Schedule Jobs</h1>
+         <div className='flex flex-for no-wrap gap-4 w-full justify-between py-10'><Button  outline gradientDuoTone="redToYellow" onClick={() => changeLanguage('en')}>English</Button>
+         <Button  outline gradientDuoTone="redToYellow" onClick={() => changeLanguage('pa')}>Punjabi</Button></div>
+         
          {loading ? (
             <div className="flex justify-center items-center">
                <Spinner size="xl" />
