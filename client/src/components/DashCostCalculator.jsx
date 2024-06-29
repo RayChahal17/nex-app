@@ -27,19 +27,23 @@ export default function DashCostCalculator() {
    const [extraCosts, setExtraCosts] = useState([]);
    const [totalCost, setTotalCost] = useState(0);
    const [details, setDetails] = useState('');
+   const [rawConcreteLoad, setRawConcreteLoad] = useState(0);
+   const [roundedVolume, setRoundedVolume] = useState(0);
+   
+
 
    useEffect(() => {
       if (area > 0) {
-          setWireMeshArea(area); // Set wireMeshArea to the total area initially
-          setDigArea(area); // Set digArea to the total area initially
-          calculateReinforcement();
-          calculateConcreteLoad();
-          calculateGravelYards();
-          calculateBins();
-          calculateTotalCost();
+         setWireMeshArea(area); // Set wireMeshArea to the total area initially
+         setDigArea(area); // Set digArea to the total area initially
+         calculateReinforcement();
+         calculateConcreteLoad();
+         calculateGravelYards();
+         calculateBins();
+         calculateTotalCost();
       }
-  }, [area, slabThickness, wireMeshArea, gravelType, depth, digArea, generalLaborDays, generalLaborWorkers, supervisoryLaborDays, supervisoryLaborWorkers, extraCosts]);
-  
+   }, [area, slabThickness, wireMeshArea, gravelType, depth, digArea, generalLaborDays, generalLaborWorkers, supervisoryLaborDays, supervisoryLaborWorkers, extraCosts]);
+
 
    const calculateReinforcement = () => {
       const remainingArea = area - wireMeshArea;
@@ -63,25 +67,33 @@ export default function DashCostCalculator() {
       const slabThicknessFactor = slabThickness / 4;
       const adjustedCoverage = coveragePerCubicMeter / slabThicknessFactor;
       const numberOfCubicMeters = area / adjustedCoverage;
-      const roundedVolume = Math.ceil(numberOfCubicMeters * 10) / 10;
-
+  
+      setRawConcreteLoad(numberOfCubicMeters); // Store the unrounded concrete load
+  
+      // Round to nearest 0.5 cubic meter
+      let roundedVolume = Math.ceil(numberOfCubicMeters * 2) / 2;
+      setRoundedVolume(roundedVolume);
+  
       const baseCost = 210;
       const minOrderCost1 = 500;
       const minOrderCost2 = 800;
-
+  
       let totalConcreteCost;
-
+  
       if (roundedVolume <= 1) {
-         totalConcreteCost = minOrderCost1;
+          totalConcreteCost = minOrderCost1;
       } else if (roundedVolume <= 2.5) {
-         totalConcreteCost = minOrderCost2;
+          totalConcreteCost = minOrderCost2;
       } else {
-         totalConcreteCost = roundedVolume * baseCost + tip;
+          totalConcreteCost = roundedVolume * baseCost + tip;
       }
-
+  
       setConcreteLoad(roundedVolume);
       setConcreteCost(totalConcreteCost);
-   };
+  };
+  
+
+
 
    const calculateGravelYards = () => {
       const gravelVolume = area * 0.00333;
@@ -158,13 +170,14 @@ export default function DashCostCalculator() {
 
       const extraCostTotal = extraCosts.reduce((total, cost) => total + parseFloat(cost.cost || 0), 0);
 
-      const gravelTotalCost = gravelYards * gravelCost + 80; // Adding $80 charge for bringing gravel
+      const gravelDeliveryFee = 80;
+      const gravelTotalCost = gravelYards * gravelCost + gravelDeliveryFee; // Adding $80 charge for bringing gravel
       const total = binCost + rodCost + meshCost + concreteCost + totalGeneralLaborCost + totalSupervisoryLaborCost + gravelTotalCost + extraCostTotal;
       setTotalCost(total);
-      generateDetails(binCost, rodCost, meshCost, concreteCost, totalGeneralLaborCost, totalSupervisoryLaborCost, gravelTotalCost, extraCostTotal, numberOfBins);
+      generateDetails(binCost, rodCost, meshCost, concreteCost, totalGeneralLaborCost, totalSupervisoryLaborCost, gravelTotalCost, extraCostTotal, numberOfBins, gravelDeliveryFee);
    };
 
-   const generateDetails = (binCost, rodCost, meshCost, concreteCost, totalGeneralLaborCost, totalSupervisoryLaborCost, gravelTotalCost, extraCostTotal, numberOfBins) => {
+   const generateDetails = (binCost, rodCost, meshCost, concreteCost, totalGeneralLaborCost, totalSupervisoryLaborCost, gravelTotalCost, extraCostTotal, numberOfBins, gravelDeliveryFee) => {
       let details = `
       <h2 class="text-2xl font-bold mb-4 text-gray-700">Summary</h2>
       <h3 class="text-xl font-semibold mb-2 text-gray-600">Project Area Details</h3>
@@ -322,6 +335,10 @@ export default function DashCostCalculator() {
             <td class="border px-4 py-2">Gravel Cost</td>
             <td class="border px-4 py-2">$${gravelYards * gravelCost}</td>
           </tr>
+          <tr>
+            <td class="border px-4 py-2">Delivery Fee</td>
+            <td class="border px-4 py-2">$${gravelDeliveryFee}</td>
+          </tr>
         </tbody>
       </table>
       <div class="p-4 mb-4 rounded-lg bg-gray-100">
@@ -360,6 +377,7 @@ export default function DashCostCalculator() {
     `;
       setDetails(details);
    };
+
 
    const addExtraCost = () => {
       setExtraCosts([...extraCosts, { id: Date.now(), name: '', cost: 0 }]);
@@ -400,9 +418,9 @@ export default function DashCostCalculator() {
                      </div>
                   </div>
                </div>
-
+   
                <hr />
-
+   
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Concrete Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -415,6 +433,11 @@ export default function DashCostCalculator() {
                         <TextInput id="concreteCost" type="number" value={concreteCost.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
                   </div>
+                  <p className="mt-4 text-blue-500">
+                  Extra load of {((roundedVolume - rawConcreteLoad))} cubic meters added to {rawConcreteLoad} cubic meters to make {roundedVolume.toFixed(2)} cubic meters to prevent load scarcity on the field.
+
+</p>
+
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6 text-blue-400">
                      <div>
                         <Label htmlFor="costPerCubicMeter">Cost per cubic meter ($)</Label>
@@ -432,9 +455,9 @@ export default function DashCostCalculator() {
                      <p>Recommendation: Always order 1/2 meter extra to avoid shortages</p>
                   </div>
                </div>
-
+   
                <hr />
-
+   
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Digging and Bin Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -464,9 +487,9 @@ export default function DashCostCalculator() {
                      </div>
                   </div>
                </div>
-
+   
                <hr />
-
+   
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Reinforcement Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -491,9 +514,9 @@ export default function DashCostCalculator() {
                      </div>
                   </div>
                </div>
-
+   
                <hr />
-
+   
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Labor Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -525,9 +548,9 @@ export default function DashCostCalculator() {
                      </div>
                   </div>
                </div>
-
+   
                <hr />
-
+   
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Gravel Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -544,11 +567,15 @@ export default function DashCostCalculator() {
                         <Label htmlFor="gravelYards">Gravel Yards</Label>
                         <TextInput id="gravelYards" type="number" value={gravelYards.toFixed(2)} readOnly className="text-blue-500" />
                      </div>
+                     <div>
+                        <Label htmlFor="deliveryFee">Delivery Fee ($)</Label>
+                        <TextInput id="deliveryFee" type="number" value={80} readOnly className="text-blue-500" />
+                     </div>
                   </div>
                </div>
-
+   
                <hr />
-
+   
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">Extra Costs</h3>
                   {extraCosts.length > 0 && extraCosts.map((cost) => (
@@ -566,9 +593,9 @@ export default function DashCostCalculator() {
                   ))}
                   <Button onClick={addExtraCost}><PlusIcon className="h-5 w-5" /> Add Extra Cost</Button>
                </div>
-
+   
                <hr />
-
+   
                <div className="text-center">
                   <Button className="mt-6" onClick={calculateTotalCost}>Calculate Total Cost</Button>
                   <Alert className="mt-6" color="info">
@@ -580,4 +607,7 @@ export default function DashCostCalculator() {
          </Card>
       </div>
    );
+   
+   
+   
 }
