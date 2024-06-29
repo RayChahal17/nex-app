@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Button, Modal, Select, Textarea, TextInput, Spinner } from 'flowbite-react';
 import { DateTime } from 'luxon';
 import { WiThermometer, WiRain, WiSnow, WiStrongWind, WiHumidity } from 'react-icons/wi';
+import i18n from './i18n';
 import { useTranslation } from 'react-i18next';
-import i18DashScheduleJobs from '../utils/i18DashScheduleJobs';
 
 export default function ScheduleJobs() {
    const [jobs, setJobs] = useState([]);
@@ -29,9 +29,11 @@ export default function ScheduleJobs() {
 
    const { t } = useTranslation();
 
-const changeLanguage = (lng) => {
-   i18DashScheduleJobs.changeLanguage(lng);
-};
+   const changeLanguage = (lng) => {
+      i18n.changeLanguage(lng);
+      setIsLoading(true); // Mark as loading when language is changed
+   };
+
 
    useEffect(() => {
       fetchJobs();
@@ -247,42 +249,42 @@ const changeLanguage = (lng) => {
 
    // Button to toggle visibility
    // Example: Toggle Old Jobs Button
-const renderToggleOldJobsButton = () => (
-   <div className='flex justify-center align-center mt-10'>
-      <Button color="dark" pill onClick={() => setShowOldJobs(!showOldJobs)} className='px-10 font-bold'>
-         {showOldJobs ? t('Hide Old or Completed Jobs') : t('Show Old or Completed Jobs')}
-      </Button>
-   </div>
-);
-
-// Example: Render Unassigned Jobs
-const renderUnassignedJobs = () => {
-   return (
-      <div className="md:px-20 px-5 py-5 text-center rounded-lg border-solid border-teal-700 mt-10 bg-blue-50 border-2">
-         <h3 className="md:text-3xl text-xl text-slate-900 font-bold mb-4">{t('Unassigned Jobs')}</h3>
-         {unassignedJobs.map((job) => (
-            <div key={job._id} className="mt-4 p-4 bg-gray-300 rounded-lg text-sm">
-               <h3 className="text-sm font-bold">{job.customerInfo.name} ({job.status})</h3>
-               <div><strong>{t('Address')}:</strong> {job.customerInfo.address}, {job.customerInfo.city}</div>
-               <div><strong>{t('Estimated Cost')}:</strong> ${job.discountedEstimate?.toFixed(2) || 'N/A'}</div>
-               <div><strong>{t('Service Type')}:</strong> {job.serviceType || 'N/A'}</div>
-               <div className="mt-4">
-                  <Select
-                     value={job.status}
-                     onChange={(e) => handleJobStatusChange(job._id, e.target.value)}
-                     className="w-full"
-                  >
-                     <option value="Job Pending">{t('Job Pending')}</option>
-                     <option value="Job Waiting">{t('Job Waiting')}</option>
-                     <option value="Job In Progress">{t('Job In Progress')}</option>
-                     <option value="Job Completed">{t('Job Completed')}</option>
-                  </Select>
-               </div>
-            </div>
-         ))}
+   const renderToggleOldJobsButton = () => (
+      <div className='flex justify-center align-center mt-10'>
+         <Button color="dark" pill onClick={() => setShowOldJobs(!showOldJobs)} className='px-10 font-bold'>
+            {showOldJobs ? t('Hide Old or Completed Jobs') : t('Show Old or Completed Jobs')}
+         </Button>
       </div>
    );
-};
+
+   // Example: Render Unassigned Jobs
+   const renderUnassignedJobs = () => {
+      return (
+         <div className="md:px-20 px-5 py-5 text-center rounded-lg border-solid border-teal-700 mt-10 bg-blue-50 border-2">
+            <h3 className="md:text-3xl text-xl text-slate-900 font-bold mb-4">{t('Unassigned Jobs')}</h3>
+            {unassignedJobs.map((job) => (
+               <div key={job._id} className="mt-4 p-4 bg-gray-300 rounded-lg text-sm">
+                  <h3 className="text-sm font-bold">{job.customerInfo.name} ({job.status})</h3>
+                  <div><strong>{t('Address')}:</strong> {job.customerInfo.address}, {job.customerInfo.city}</div>
+                  <div><strong>{t('Estimated Cost')}:</strong> ${job.discountedEstimate?.toFixed(2) || 'N/A'}</div>
+                  <div><strong>{t('Service Type')}:</strong> {job.serviceType || 'N/A'}</div>
+                  <div className="mt-4">
+                     <Select
+                        value={job.status}
+                        onChange={(e) => handleJobStatusChange(job._id, e.target.value)}
+                        className="w-full"
+                     >
+                        <option value="Job Pending">{t('Job Pending')}</option>
+                        <option value="Job Waiting">{t('Job Waiting')}</option>
+                        <option value="Job In Progress">{t('Job In Progress')}</option>
+                        <option value="Job Completed">{t('Job Completed')}</option>
+                     </Select>
+                  </div>
+               </div>
+            ))}
+         </div>
+      );
+   };
 
 
    const deleteSchedule = async () => {
@@ -462,7 +464,7 @@ const renderUnassignedJobs = () => {
    const renderWeatherModal = () => {
       const { date, city } = weatherModalData;
       const weatherForDate = weatherData[date] || [];
-   
+
       return (
          <Modal show={weatherModalOpen} onClose={() => setWeatherModalOpen(false)} size="lg">
             <Modal.Header>{t('Weather Details for')} {city} {t('on')} {date}</Modal.Header>
@@ -491,7 +493,7 @@ const renderUnassignedJobs = () => {
          </Modal>
       );
    };
-   
+
 
    const renderBriefWeather = (date, city) => {
       if (!weatherData[date]) return null;
@@ -814,7 +816,7 @@ const renderUnassignedJobs = () => {
          </Modal.Footer>
       </Modal>
    );
-   
+
 
 
    const deleteNote = (jobId, entryIndex, noteIndex) => {
@@ -866,7 +868,7 @@ const renderUnassignedJobs = () => {
          evening: 'bg-yellow-300',
          'whole day': 'bg-yellow-500',
       };
-   
+
       const formatDate = (date) => {
          const today = DateTime.now().setZone('America/Toronto').startOf('day');
          const entryDate = DateTime.fromISO(date, { zone: 'America/Toronto' }).startOf('day');
@@ -874,18 +876,18 @@ const renderUnassignedJobs = () => {
          if (entryDate.equals(today.plus({ days: 1 }))) return `${entryDate.toLocaleString(DateTime.DATE_SHORT)} (${t('Tomorrow')})`;
          return entryDate.toLocaleString(DateTime.DATE_SHORT);
       };
-   
+
       const timeOrder = ['morning', 'noon', 'evening', 'whole day'];
-   
+
       const groupedSchedule = job.schedule.reduce((acc, entry) => {
          const date = entry.date;
          if (!acc[date]) acc[date] = [];
          acc[date].push(entry);
          return acc;
       }, {});
-   
+
       const sortedDates = Object.keys(groupedSchedule).sort((a, b) => new Date(a) - new Date(b));
-   
+
       return (
          <div className="mt-4 md:p-5 p-2 md:mb-10 mb-4 bg-blue-50 border-solid shadow-[inset_0px_0px_17px_1px_#48bb78]  rounded-lg border-2 ">
             <h3 className="text-2xl text-red-800 font-bold mb-2">{job.customerInfo.name} ({job.status})</h3>
@@ -970,7 +972,7 @@ const renderUnassignedJobs = () => {
          </div>
       );
    };
-   
+
 
 
 
@@ -999,7 +1001,7 @@ const renderUnassignedJobs = () => {
       return lastScheduledDate < new Date().setHours(0, 0, 0, 0) || job.status === 'Job Completed';
    });
 
-   
+
 
    const confirmDeleteJob = (jobId) => {
       setJobToDelete(jobId);
@@ -1098,10 +1100,14 @@ const renderUnassignedJobs = () => {
 
    return (
       <div className="p-4">
-         <h1 className="text-2xl font-bold mb-4">Schedule Jobs</h1>
-         <div className='flex flex-for no-wrap gap-4 w-full justify-between py-10'><Button  outline gradientDuoTone="redToYellow" onClick={() => changeLanguage('en')}>English</Button>
-         <Button  outline gradientDuoTone="redToYellow" onClick={() => changeLanguage('pa')}>Punjabi</Button></div>
-         
+               <h1 className="flex justify-center align-center text-2xl font-extrabold mb-4 ">{t('Schedule Jobs')}</h1>
+
+         <div className='flex flex-for no-wrap gap-2 w-full justify-center py-10'>
+
+            <Button outline gradientDuoTone="cyanToBlue" onClick={() => changeLanguage('en')}>{t('English')}</Button>
+            <Button outline gradientDuoTone="cyanToBlue" onClick={() => changeLanguage('pa')}>{t('Punjabi')}</Button>
+         </div>
+
          {loading ? (
             <div className="flex justify-center items-center">
                <Spinner size="xl" />

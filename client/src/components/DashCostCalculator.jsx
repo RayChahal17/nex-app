@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Select, Label, Card, Alert, TextInput } from 'flowbite-react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/solid';
-import i18nDashCostCalculator from '../utils/i18nDashCostCalculator';
+import i18n from './i18n';
 import { useTranslation } from 'react-i18next';
 
 export default function DashCostCalculator() {
@@ -34,7 +34,7 @@ export default function DashCostCalculator() {
    const { t } = useTranslation();
 
    const changeLanguage = (lng) => {
-      i18nDashCostCalculator.changeLanguage(lng);
+      i18n.changeLanguage(lng);
    };
 
 
@@ -407,8 +407,9 @@ export default function DashCostCalculator() {
       <div className="container mx-auto md:p-6 p-1 bg-gray-100">
          <Card className="shadow-lg md:p-6 p-1 rounded-lg">
             <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">{t('Concrete Cost Estimation')}</h2>
-            <Button onClick={() => changeLanguage('en')}>English</Button>
-            <Button onClick={() => changeLanguage('pa')}>Punjabi</Button>
+            <div className='flex flex-for no-wrap gap-2 w-full justify-center py-10'>
+            <Button outline gradientDuoTone="cyanToBlue" onClick={() => changeLanguage('en')}>English</Button>
+            <Button outline gradientDuoTone="cyanToBlue" onClick={() => changeLanguage('pa')}>Punjabi</Button></div>
             <div className="space-y-8">
                <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-600">{t('Project Area Details')}</h3>
